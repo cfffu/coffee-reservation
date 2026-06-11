@@ -491,12 +491,6 @@
 
 <div id="main-app" style="display: none;">
 
-  <div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
-    ☁️ <strong>Firebase 未設定</strong>，目前使用 localStorage（僅此裝置可見）。<br>
-    如需跨裝置同步，請在程式碼頂端填入你的 Firebase 設定。
-    <button onclick="this.parentElement.style.display='none'" style="float:right;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;margin-left:10px">✕</button>
-  </div>
-
   <header>
     <div class="brand">
       <h1>☕ 咖啡廳訂位系統</h1>
@@ -593,14 +587,15 @@
 // FIREBASE CONFIG
 // ═══════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyCAlWYyeJOhvqpxJRXFQmNCrV-0CGYdEhE",
+  authDomain:        "cafe-reservation-f8228.firebaseapp.com",
+  projectId:         "cafe-reservation-f8228",
+  storageBucket:     "cafe-reservation-f8228.firebasestorage.app",
+  messagingSenderId: "811749907224",
+  appId:             "1:811749907224:web:480395a49f853bc4305c6d",
+  measurementId:     "G-4KC5LQ9560"
 };
-const FB_ENABLED = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
+const FB_ENABLED = FIREBASE_CONFIG.apiKey !== "AIzaSyCAlWYyeJOhvqpxJRXFQmNCrV-0CGYdEhE";
 let db = null;
 if (FB_ENABLED) {
   firebase.initializeApp(FIREBASE_CONFIG);
