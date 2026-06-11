@@ -94,15 +94,18 @@
     box-shadow: 0 2px 8px rgba(100,70,40,.08);
   }
   .date-nav input[type=date] {
-    border: none; background: transparent;
+    border: none;
+    background: transparent;
     font-family: 'Noto Serif TC', serif;
     font-size: .82rem; color: var(--espresso);
     letter-spacing: .05em; outline: none; cursor: pointer;
-    padding: 0 4px; width: 130px;
+    padding: 0 4px;
+    width: 130px;
   }
   .date-nav-btn {
     background: none; border: none; color: var(--latte);
-    font-size: 1.15rem; cursor: pointer; padding: 0 4px;
+    font-size: 1.15rem; cursor: pointer;
+    padding: 0 4px;
     border-radius: 6px; transition: color .15s, background .15s; line-height:1;
   }
   .date-nav-btn:hover { color: var(--espresso); background: var(--bg2); }
@@ -113,7 +116,8 @@
   }
   #gantt-date-label {
     font-size: .78rem; color: var(--text-light);
-    letter-spacing: .1em; margin-bottom: 8px; text-align: right;
+    letter-spacing: .1em;
+    margin-bottom: 8px; text-align: right;
   }
   #gantt-date-label.is-today { color: var(--latte); font-weight: 500; }
 
@@ -413,9 +417,11 @@
   .suffix-group { display: flex; gap: 8px; align-items: center; flex: 1; }
   .suffix-group input { flex: 1; }
   .suffix-btn {
-    padding: 10px 14px; border-radius: 9px; border: 1px solid var(--border);
+    padding: 10px 14px; border-radius: 9px;
+    border: 1px solid var(--border);
     background: var(--bg); font-family: 'Noto Serif TC', serif; font-size: .78rem;
-    color: var(--text-light); cursor: pointer; transition: all .15s; white-space: nowrap;
+    color: var(--text-light); cursor: pointer; transition: all .15s;
+    white-space: nowrap;
   }
   .suffix-btn.active, .suffix-btn:hover { background: var(--espresso); color: var(--cream); border-color: var(--espresso); }
 
@@ -429,7 +435,8 @@
   .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; gap: 10px; }
   .btn-save {
     background: var(--espresso); color: var(--cream); border: none; border-radius: 50px;
-    padding: 11px 30px; font-family: 'Noto Serif TC', serif; font-size: .82rem;
+    padding: 11px 30px;
+    font-family: 'Noto Serif TC', serif; font-size: .82rem;
     letter-spacing: .1em; cursor: pointer; transition: all .2s; box-shadow: 0 3px 12px rgba(100,60,20,.22);
   }
   .btn-save:hover { background: #5a3a1a; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(100,60,20,.28); }
@@ -514,7 +521,6 @@
 </head>
 <body>
 
-<!-- 🔑 密碼驗證全螢幕遮罩 -->
 <div class="auth-overlay" id="auth-overlay">
   <div class="auth-box">
     <h2>🔑 系統管理員登入</h2>
@@ -525,7 +531,6 @@
   </div>
 </div>
 
-<!-- 📦 主應用程式容器 -->
 <div id="main-app" style="display: none;">
 
   <div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
@@ -555,15 +560,13 @@
 
   <div class="gantt-wrap">
     <div class="gantt" id="gantt">
-      <!-- 由 JavaScript 生成網格元素 -->
-    </div>
+      </div>
   </div>
 
 </div>
 
 <div id="tooltip"></div>
 
-<!-- Context Menu -->
 <div id="ctx-menu">
   <button class="ctx-btn" id="ctx-edit-btn">✏️ 編輯訂位</button>
   <button class="ctx-btn" id="ctx-arrived-btn">✔ 已抵達</button>
@@ -576,7 +579,6 @@
   </div>
 </div>
 
-<!-- Modal 表單 -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
   <div class="modal">
     <h2 id="modal-title">新增訂位</h2>
@@ -617,8 +619,7 @@
     <div class="form-row">
       <label>指派桌號 (可多選佔多桌)</label>
       <div class="table-checkbox-grid" id="table-checkbox-container">
-        <!-- 由 JS 動態生成多選 Checkbox -->
-      </div>
+        </div>
     </div>
     <div class="form-row">
       <label>備註事項</label>
@@ -657,34 +658,36 @@ const TABLES = [
   { id: 't3',  label: '3號桌',          bg: '#c8e6c9', fg: '#2a5e30' },
   { id: 't5',  label: '5號桌',          bg: '#b3d9f7', fg: '#1a4e7a' },
   { id: 't6',  label: '6號桌',          bg: '#d4c5f0', fg: '#4a2a8a' },
-  { id: 'ts',  label: '小包廂',         bg: '#ffc8d8', fg: '#8a1a40' },
-  { id: 'tl',  label: '大包廂（圓桌）', bg: '#b5e0d8', fg: '#1a5a50' },
+  { id: 'ts',  label: '小包廂',        bg: '#ffc8d8', fg: '#8a1a40' },
+  { id: 'tl',  label: '大包廂（圓桌）', background: '#b5e0d8', fg: '#1a5a50' },
   { id: 'lb1', label: '大包廂(1)',      bg: '#c5dff8', fg: '#1a3a6a' },
-  { id: 'lb2', label: '大board(2)',     bg: '#d8f0c5', fg: '#2a5a1a' },
+  { id: 'lb2', label: '大板桌(2)',      bg: '#d8f0c5', fg: '#2a5a1a' },
   { id: 'lb3', label: '大包廂(3)',      bg: '#f8e4c5', fg: '#6a3a0a' },
   { id: 'lb4', label: '大包廂(4)',      bg: '#e8c5f8', fg: '#5a1a7a' },
 ];
 
-const DAY_START = 10.5 * 60;  // 10:00
-const DAY_END   = 18 * 60;  // 18:00
+const DAY_START = 10 * 60;   // 10:00
+const DAY_END   = 18 * 60;   // 18:00
 const DAY_MINS  = DAY_END - DAY_START;
-const GRID_SLOTS = 16; 
+const GRID_SLOTS = 16;       
 
 let reservationsByDate = {};
-let currentDate        = todayStr();
-let editingId          = null; 
-let ctxTargetId        = null; 
-let pendingDeleteId    = null;
-let suffix             = '先生';
+let currentDate = todayStr();
+let editingId = null;
+let ctxTargetId = null;
+let pendingDeleteId = null;
+let suffix = '先生';
 
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
+
 function getReservations() {
   if (!reservationsByDate[currentDate]) reservationsByDate[currentDate] = [];
   return reservationsByDate[currentDate];
 }
+
 function saveLocal() {
   try { localStorage.setItem('rbd_v1', JSON.stringify(reservationsByDate)); } catch(e) {}
 }
@@ -697,24 +700,35 @@ function loadLocal() {
 
 async function saveDateToFirebase(dateStr) {
   if (!FB_ENABLED || !db) return;
-  try { await db.collection('reservations').doc(dateStr).set({ list: reservationsByDate[dateStr] || [] }); } catch(e) {}
+  try {
+    await db.collection('reservations').doc(dateStr).set({ list: reservationsByDate[dateStr] || [] });
+  } catch(e) {}
 }
+
 async function loadDateFromFirebase(dateStr) {
   if (!FB_ENABLED || !db) return false;
   try {
     const doc = await db.collection('reservations').doc(dateStr).get();
     if (doc.exists) {
       reservationsByDate[dateStr] = doc.data().list || [];
-      saveLocal(); return true;
+      saveLocal();
+      return true;
     }
     return false;
   } catch(e) { return false; }
 }
 
-function saveAll() { saveLocal(); saveDateToFirebase(currentDate); }
+function saveAll() {
+  saveLocal();
+  saveDateToFirebase(currentDate);
+}
+
 async function loadAll() {
   loadLocal();
-  if (FB_ENABLED) { const ok = await loadDateFromFirebase(currentDate); if (ok) render(); }
+  if (FB_ENABLED) {
+    const ok = await loadDateFromFirebase(currentDate);
+    if (ok) render();
+  }
 }
 
 // 🔐 密碼登入核心邏輯（修復：驗證成功後才觸發系統初始載入與渲染）
@@ -722,8 +736,8 @@ function checkPassword() {
   const inputPass = document.getElementById('auth-password').value;
   const errorEl = document.getElementById('auth-error');
   const overlayEl = document.getElementById('auth-overlay');
-  
-  if (inputPass === "cafe1234") {     /*///////////////////////////////////////////////////// 密碼在這 /////////////////////////////////////////////////////*/
+
+  if (inputPass === "cafe1234") { /*///////////////////////////////////////////////////// 密碼在這 /////////////////////////////////////////////////////*/
     sessionStorage.setItem('is_cafe_admin', 'true');
     overlayEl.style.opacity = '0';
     setTimeout(() => {
@@ -741,10 +755,9 @@ function checkPassword() {
 // 🚀 正式初始化整個訂位儀表板
 async function startSystem() {
   document.getElementById('main-app').style.display = 'block';
-  
   buildGantt();
   buildLegend();
-  buildTableCheckboxes(); 
+  buildTableCheckboxes();
   buildTimeSelects();
   
   if (!FB_ENABLED) document.getElementById('fb-banner').style.display = 'block';
@@ -754,18 +767,19 @@ async function startSystem() {
   if (Object.keys(reservationsByDate).length === 0) {
     const td = todayStr();
     reservationsByDate[td] = [
-      { id:'s1', groupId: null, name:'陳', suffix:'小姐', phone:'0912111222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60, endMin:13*60 },
+      { id:'s1', groupId: null, name:'陳',  suffix:'小姐', phone:'0912111222', pax:'2',  note:'窗邊座位', tableId:'t1',  startMin:11*60,    endMin:13*60    },
       { id:'s3_1', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb1', startMin:13*60, endMin:16*60 },
       { id:'s3_2', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb2', startMin:13*60, endMin:16*60 },
-      { id:'s4', groupId: null, name:'張', suffix:'小姐', phone:'0922444555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60, endMin:12*60 },
-      { id:'s5', groupId: null, name:'李', suffix:'先生', phone:'0988555666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 }
+      { id:'s4', groupId: null, name:'張',  suffix:'小姐', phone:'0922444555', pax:'2',  note:'不吃花生', tableId:'t5',  startMin:10*60,    endMin:12*60    },
+      { id:'s5', groupId: null, name:'李',  suffix:'先生', phone:'0988555666', pax:'3',  note:'提早告知', tableId:'ts',  startMin:14*60+30, endMin:16*60+30 }
     ];
   }
   switchDate(todayStr());
 }
 
 function timeStrToMin(str) {
-  const m = str.trim().match(/^(\d{1,2}):(\d{2})$/); if (!m) return null;
+  const m = str.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
   return parseInt(m[1]) * 60 + parseInt(m[2]);
 }
 function minToTimeStr(min) {
@@ -782,7 +796,7 @@ function _doDelete() {
   document.getElementById('ctx-confirm-bar').style.display = 'none';
   hideCtxMenu();
   if (!id) return;
-  
+
   const rs = getReservations();
   const target = rs.find(r => r.id === id);
   if (!target) return;
@@ -792,10 +806,8 @@ function _doDelete() {
   } else {
     reservationsByDate[currentDate] = rs.filter(r => r.id !== id);
   }
-  
   saveAll(); render();
 }
-
 function _cancelDelete() {
   pendingDeleteId = null;
   document.getElementById('ctx-confirm-bar').style.display = 'none';
@@ -804,8 +816,8 @@ function _cancelDelete() {
 function toggleArrived(id) {
   if (!id) return;
   const rs = getReservations();
-  const target = rs.find(x => x.id === id); if (!target) return;
-  
+  const target = rs.find(x => x.id === id);
+  if (!target) return;
   const newState = !target.arrived;
   
   if (target.groupId) {
@@ -813,411 +825,388 @@ function toggleArrived(id) {
   } else {
     target.arrived = newState;
   }
-  saveAll(); render();
+  saveAll(); render(); hideCtxMenu();
 }
 
-function checkoutReservation(id) {
+function toggleCheckout(id) {
   if (!id) return;
   const rs = getReservations();
-  const target = rs.find(x => x.id === id); if (!target) return;
-  
+  const target = rs.find(x => x.id === id);
+  if (!target) return;
   const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  
-  if (nowMin <= target.startMin) {
-    alert("⚠️ 客人尚未到達或尚未到開始時間，無法執行離開釋出！\n如果是提早取消，請直接使用「刪除訂位」。");
-    return;
-  }
-  if (nowMin >= target.endMin) {
-    alert("訂位時間本來就已經結束囉！");
-    return;
-  }
+  const currentMin = now.getHours() * 60 + now.getMinutes();
+  const finalMin = Math.max(target.startMin + 15, Math.min(currentMin, DAY_END));
 
-  const roundedNowMin = Math.round(nowMin / 5) * 5;
-  const finalEndMin = Math.max(target.startMin + 5, roundedNowMin);
-  
   if (target.groupId) {
-    rs.forEach(x => { if (x.groupId === target.groupId) x.endMin = finalEndMin; });
+    rs.forEach(x => { if (x.groupId === target.groupId) x.endMin = finalMin; });
   } else {
-    target.endMin = finalEndMin;
+    target.endMin = finalMin;
   }
-  
-  saveAll(); render();
-}
-
-const WEEKDAYS = ['日','一','二','三','四','五','六'];
-function updateDateUI() {
-  const picker = document.getElementById('date-picker'); if (picker) picker.value = currentDate;
-  const d = new Date(currentDate + 'T00:00:00');
-  const lbl = document.getElementById('gantt-date-label');
-  const isToday = currentDate === todayStr();
-  if (lbl) {
-    lbl.textContent = d.getFullYear() + ' / ' + (d.getMonth()+1) + ' / ' + d.getDate() + ' （週' + WEEKDAYS[d.getDay()] + '）' + (isToday ? '  ✦ 今天' : '');
-    lbl.className = isToday ? 'is-today' : '';
-  }
-}
-
-async function switchDate(dateStr) {
-  if (!dateStr) return; currentDate = dateStr;
-  if (!reservationsByDate[currentDate]) reservationsByDate[currentDate] = [];
-  updateDateUI(); render();
-  if (FB_ENABLED) { const ok = await loadDateFromFirebase(currentDate); if (ok) render(); }
-}
-
-function shiftDate(delta) {
-  const d = new Date(currentDate + 'T00:00:00'); d.setDate(d.getDate() + delta);
-  switchDate(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
+  saveAll(); render(); hideCtxMenu();
 }
 
 // ═══════════════════════════════════════════════════
-// BUILD GANTT GRID
+// UI GENERATORS
 // ═══════════════════════════════════════════════════
 function buildGantt() {
   const g = document.getElementById('gantt'); g.innerHTML = '';
   const corner = document.createElement('div'); corner.className = 'gh-corner'; g.appendChild(corner);
 
   for (let s = 0; s < GRID_SLOTS; s++) {
-    const totalMins = s * 30; const h = 10 + Math.floor(totalMins / 60); const m = totalMins % 60;
+    const totalMins = DAY_START + (s * 30);
+    const h = Math.floor(totalMins / 60); const m = totalMins % 60;
     const div = document.createElement('div');
     div.className = 'gh-time' + (m === 0 ? ' hour-mark' : '');
-    div.textContent = m === 0 ? `${h}:00` : '';
-    div.style.gridColumn = s + 2;
+    div.textContent = `${h}:${String(m).padStart(2,'0')}`; div.style.gridColumn = s + 2;
     g.appendChild(div);
   }
 
   TABLES.forEach((t, rIdx) => {
     const label = document.createElement('div');
-    label.className = 'grow-label'; label.textContent = t.label;
-    label.style.gridRow = rIdx + 2;
+    label.className = 'grow-label'; label.textContent = t.label; label.style.gridRow = rIdx + 2;
     g.appendChild(label);
 
     for (let s = 0; s < GRID_SLOTS; s++) {
       const cell = document.createElement('div');
       cell.className = 'gcell' + (s % 2 === 0 ? ' hour-start' : '');
-      cell.style.gridRow = rIdx + 2;
-      cell.style.gridColumn = s + 2;
+      cell.style.gridRow = rIdx + 2; cell.style.gridColumn = s + 2;
       g.appendChild(cell);
     }
   });
 
   const resContainer = document.createElement('div');
-  resContainer.className = 'res-container';
-  resContainer.id = 'res-container';
+  resContainer.className = 'res-container'; resContainer.id = 'res-container';
   resContainer.style.gridRow = `2 / span ${TABLES.length}`;
   g.appendChild(resContainer);
 }
 
 function buildLegend() {
-  const el = document.getElementById('legend'); el.innerHTML = '';
+  const l = document.getElementById('legend'); l.innerHTML = '';
   TABLES.forEach(t => {
-    el.innerHTML += `<div class="leg-item"><div class="leg-dot" style="background:${t.bg};border:1px solid ${t.fg}33"></div>${t.label}</div>`;
+    const item = document.createElement('div'); item.className = 'leg-item';
+    const dot = document.createElement('div'); dot.className = 'leg-dot'; dot.style.background = t.bg;
+    const txt = document.createElement('span'); txt.textContent = t.label;
+    item.appendChild(dot); item.appendChild(txt); l.appendChild(item);
   });
 }
-
-// ═══════════════════════════════════════════════════
-// RENDER BLOCKS
-// ═══════════════════════════════════════════════════
-function render() {
-  const container = document.getElementById('res-container');
-  if (!container) return; 
-  container.innerHTML = '';
-  getReservations().forEach(r => renderBlock(r));
-}
-
-function renderBlock(r) {
-  const container = document.getElementById('res-container');
-  if (!container) return;
-  const table = TABLES.find(t => t.id === r.tableId); if (!table) return;
-  const rowIdx = TABLES.findIndex(t => t.id === r.tableId);
-
-  const leftPercent = ((r.startMin - DAY_START) / DAY_MINS) * 100;
-  const widthPercent = ((r.endMin - r.startMin) / DAY_MINS) * 100;
-  const rowHeight = 56;
-  const topPx = rowIdx * rowHeight + 6;
-
-  const block = document.createElement('div');
-  block.className = 'res-block';
-  block.id = 'rb-' + r.id;
-  if (r.groupId) {
-    block.setAttribute('data-group-id', r.groupId); 
-  }
-  block.style.left = `${leftPercent}%`;
-  block.style.width = `${widthPercent}%`;
-  block.style.top = `${topPx}px`;
-  block.style.height = `${rowHeight - 12}px`;
-  block.style.background = table.bg;
-  block.style.color = table.fg;
-  block.style.border = `1.5px solid ${table.fg}40`;
-
-  const groupTag = r.groupId ? `<span style="font-size:10px;opacity:0.7;display:block;">[多桌聯動]</span>` : '';
-  block.innerHTML = `
-    <div class="res-name">${r.name}${r.suffix} ${groupTag}</div>
-    <div class="res-time">${minToTimeStr(r.startMin)}～${minToTimeStr(r.endMin)}</div>`;
-
-  if (r.arrived) {
-    block.classList.add('arrived');
-    block.style.borderLeft = `5px solid ${table.fg}`;
-    const icon = document.createElement('div'); icon.className = 'arrived-icon'; icon.textContent = '✔';
-    block.appendChild(icon);
-  }
-
-  block.addEventListener('mouseenter', e => {
-    showTooltip(e, r);
-    if (r.groupId) {
-      document.querySelectorAll(`.res-block[data-group-id="${r.groupId}"]`).forEach(b => {
-        b.classList.add('group-highlight');
-      });
-    }
-  });
-  block.addEventListener('mousemove',  e => moveTooltip(e));
-  block.addEventListener('mouseleave', () => {
-    hideTooltip();
-    if (r.groupId) {
-      document.querySelectorAll(`.res-block[data-group-id="${r.groupId}"]`).forEach(b => {
-        b.classList.remove('group-highlight');
-      });
-    }
-  });
-
-  block.addEventListener('contextmenu', e => {
-    e.preventDefault(); e.stopPropagation();
-    ctxTargetId = r.id; hideTooltip();
-    updateCtxArrivedLabel(r.arrived);
-    showCtxMenu(e.clientX, e.clientY);
-  });
-
-  makeDraggable(block, r);
-  container.appendChild(block);
-}
-
-function updateCtxArrivedLabel(arrived) {
-  document.getElementById('ctx-arrived-btn').textContent = arrived ? '✔ 取消抵達狀態' : '✔ 切換為已抵達';
-}
-
-function makeDraggable(block, r) {
-  block.addEventListener('pointerdown', e => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-    e.stopPropagation(); e.preventDefault();
-
-    ctxTargetId = r.id;
-    hideCtxMenu(); hideTooltip();
-
-    const container = document.getElementById('res-container');
-    const containerRect = container.getBoundingClientRect();
-    const rowHeight = 56;
-    const duration = r.endMin - r.startMin;
-
-    const initialX = e.clientX;
-    const initialY = e.clientY;
-    
-    const startLeftPx = (parseFloat(block.style.left) / 100) * containerRect.width;
-    const startTopPx = parseFloat(block.style.top);
-
-    block.style.transition = 'none';
-    let isDragging = false;
-
-    const onMove = mv => {
-      const dx = mv.clientX - initialX;
-      const dy = mv.clientY - initialY;
-      if (!isDragging && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-      
-      if (!isDragging) {
-        isDragging = true;
-        block.classList.add('dragging');
-      }
-      mv.preventDefault();
-      block.style.transform = `translate(${dx}px, ${dy}px)`;
-    };
-
-    const onUp = up => {
-      document.removeEventListener('pointermove',   onMove);
-      document.removeEventListener('pointerup',     onUp);
-      document.removeEventListener('pointercancel', onUp);
-      
-      block.style.transition = '';
-      block.classList.remove('dragging');
-
-      if (!isDragging) {
-        block.style.transform = '';
-        updateCtxArrivedLabel(r.arrived);
-        showCtxMenu(initialX, initialY + 5);
-        return;
-      }
-
-      const finalDx = up.clientX - initialX;
-      const finalDy = up.clientY - initialY;
-      block.style.transform = '';
-
-      const finalLeftPx = startLeftPx + finalDx;
-      const finalTopPx = startTopPx + finalDy;
-
-      const ratio = finalLeftPx / containerRect.width;
-      let newStartMin = DAY_START + ratio * DAY_MINS;
-      newStartMin = Math.round(newStartMin / 5) * 5; 
-      const clampedStart = Math.max(DAY_START, Math.min(DAY_END - duration, newStartMin));
-      const clampedEnd = clampedStart + duration;
-
-      let newRowIdx = Math.floor((finalTopPx + (rowHeight / 2)) / rowHeight);
-      newRowIdx = Math.max(0, Math.min(TABLES.length - 1, newRowIdx));
-      const newTableId = TABLES[newRowIdx].id;
-
-      const rs = getReservations();
-      const conflict = isConflict(newTableId, clampedStart, clampedEnd, [r.id]);
-      if (conflict) {
-        alert(`⚠️ 無法移動！\n${TABLES.find(t=>t.id===newTableId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 段已有「${conflict.name}${conflict.suffix}」的預約。`);
-        render();
-        return;
-      }
-
-      const idx = rs.findIndex(x => x.id === r.id);
-      if (idx !== -1) {
-        rs[idx] = { ...rs[idx], startMin: clampedStart, endMin: clampedEnd, tableId: newTableId };
-        if (r.groupId) {
-          rs.forEach(x => {
-            if (x.groupId === r.groupId) {
-              x.startMin = clampedStart;
-              x.endMin = clampedEnd;
-            }
-          });
-        }
-      }
-      saveAll(); render();
-    };
-
-    document.addEventListener('pointermove',   onMove, { passive: false });
-    document.addEventListener('pointerup',     onUp);
-    document.addEventListener('pointercancel', onUp);
-  });
-}
-
-const tip = document.getElementById('tooltip');
-function showTooltip(e, r) {
-  let tablesLabel = '';
-  if (r.groupId) {
-    const partnerTables = getReservations().filter(x => x.groupId === r.groupId).map(x => {
-      const tObj = TABLES.find(tb => tb.id === x.tableId);
-      return tObj ? tObj.label : '';
-    });
-    tablesLabel = partnerTables.join(' + ');
-  } else {
-    const tObj = TABLES.find(tb => tb.id === r.tableId);
-    tablesLabel = tObj ? tObj.label : '未定';
-  }
-
-  tip.innerHTML = `<strong>${r.name}${r.suffix}</strong>📞 電話：${r.phone || '無'}<br>👥 人數：${r.pax || '—'} 人<br>📍 桌號：${tablesLabel}<br>${r.note ? '📝 備註：' + r.note : ''}`;
-  tip.classList.add('show'); moveTooltip(e);
-}
-function moveTooltip(e) { tip.style.left = (e.clientX + 16) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; }
-function hideTooltip() { tip.classList.remove('show'); }
-
-function showCtxMenu(x, y) {
-  const menu = document.getElementById('ctx-menu');
-  menu.style.left = '-9999px'; menu.style.top = '-9999px'; menu.classList.add('show');
-  const mw = menu.offsetWidth || 150; const mh = menu.offsetHeight || 130;
-  const safeX = Math.min(x, window.innerWidth - mw - 10);
-  const safeY = (y + mh + 10 > window.innerHeight) ? Math.max(10, y - mh) : y;
-  menu.style.left = Math.max(10, safeX) + 'px'; menu.style.top = safeY + 'px';
-}
-function hideCtxMenu() { document.getElementById('ctx-menu').classList.remove('show'); _cancelDelete(); }
-
-document.getElementById('ctx-edit-btn').addEventListener('click', e => { e.stopPropagation(); hideCtxMenu(); openModal(ctxTargetId); });
-document.getElementById('ctx-arrived-btn').addEventListener('click', e => { e.stopPropagation(); hideCtxMenu(); toggleArrived(ctxTargetId); });
-document.getElementById('ctx-checkout-btn').addEventListener('click', e => { e.stopPropagation(); hideCtxMenu(); checkoutReservation(ctxTargetId); });
-document.getElementById('ctx-delete-btn').addEventListener('click', e => { e.stopPropagation(); pendingDeleteId = ctxTargetId; document.getElementById('ctx-confirm-bar').style.display = 'flex'; });
-document.getElementById('ctx-confirm-yes').addEventListener('click', e => { e.stopPropagation(); _doDelete(); });
-document.getElementById('ctx-confirm-no').addEventListener('click', e => { e.stopPropagation(); _cancelDelete(); });
-document.getElementById('ctx-menu').addEventListener('click', e => { e.stopPropagation(); });
-document.addEventListener('click', () => hideCtxMenu());
 
 function buildTableCheckboxes() {
   const container = document.getElementById('table-checkbox-container');
-  container.innerHTML = TABLES.map(t => `
-    <label class="table-cb-label">
-      <input type="checkbox" name="f-tables" value="${t.id}" id="cb-${t.id}">
-      <span>${t.label}</span>
-    </label>
-  `).join('');
-}
-
-function buildTimeSelects() {
-  const sh = document.getElementById('f-start-h'); sh.innerHTML = '';
-  for (let h = 10; h <= 17; h++) sh.innerHTML += `<option value="${h}">${String(h).padStart(2,'0')}</option>`;
-  const eh = document.getElementById('f-end-h'); eh.innerHTML = '';
-  for (let h = 10; h <= 18; h++) eh.innerHTML += `<option value="${h}">${String(h).padStart(2,'0')}</option>`;
-
-  ['f-start-m', 'f-end-m'].forEach(id => {
-    const sel = document.getElementById(id); sel.innerHTML = '';
-    for (let m = 0; m < 60; m += 5) sel.innerHTML += `<option value="${m}">${String(m).padStart(2,'0')}</option>`;
+  container.innerHTML = '';
+  TABLES.forEach(t => {
+    const lbl = document.createElement('label'); lbl.className = 'table-cb-label';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = t.id; cb.name = 'f-tables';
+    lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + t.label));
+    container.appendChild(lbl);
   });
 }
 
-function getFormStartMin() {
-  return parseInt(document.getElementById('f-start-h').value) * 60 + parseInt(document.getElementById('f-start-m').value);
-}
-function getFormEndMin() {
-  return parseInt(document.getElementById('f-end-h').value) * 60 + parseInt(document.getElementById('f-end-m').value);
-}
-function setFormStartMin(t) {
-  document.getElementById('f-start-h').value = Math.max(10, Math.min(17, Math.floor(t / 60)));
-  document.getElementById('f-start-m').value = Math.round((t % 60) / 5) * 5;
-}
-function setFormEndMin(t) {
-  const c = Math.min(DAY_END, Math.max(DAY_START + 5, t));
-  document.getElementById('f-end-h').value = Math.max(10, Math.min(18, Math.floor(c / 60)));
-  document.getElementById('f-end-m').value = Math.round((c % 60) / 5) * 5;
+function buildTimeSelects() {
+  const sh = document.getElementById('f-start-h'), sm = document.getElementById('f-start-m');
+  const eh = document.getElementById('f-end-h'),   em = document.getElementById('f-end-m');
+  sh.innerHTML = ''; sm.innerHTML = ''; eh.innerHTML = ''; em.innerHTML = '';
+
+  const startHour = Math.floor(DAY_START / 60), endHour = Math.floor(DAY_END / 60);
+  for (let h = startHour; h <= endHour; h++) {
+    const opt = document.createElement('option'); opt.value = h; opt.textContent = String(h).padStart(2,'0');
+    sh.appendChild(opt); eh.appendChild(opt.cloneNode(true));
+  }
+  [0, 30].forEach(m => {
+    const opt = document.createElement('option'); opt.value = m; opt.textContent = String(m).padStart(2,'0');
+    sm.appendChild(opt); em.appendChild(opt.cloneNode(true));
+  });
 }
 
 function autoSetEndTime() {
-  setFormEndMin(Math.min(DAY_END, getFormStartMin() + 120)); 
+  const sh = parseInt(document.getElementById('f-start-h').value);
+  const sm = parseInt(document.getElementById('f-start-m').value);
+  let total = sh * 60 + sm + 120;
+  if (total > DAY_END) total = DAY_END;
+  document.getElementById('f-end-h').value = Math.floor(total / 60);
+  document.getElementById('f-end-m').value = total % 60;
 }
 
-function openModal(id = null) {
-  editingId = id;
-  document.getElementById('modal-title').textContent = id ? '✏️ 編輯現有訂位' : '☕ 新增咖啡廳訂位';
+// ═══════════════════════════════════════════════════
+// CORE RENDER & INTERACTION
+// ═══════════════════════════════════════════════════
+function render() {
+  const container = document.getElementById('res-container'); if (!container) return;
+  container.innerHTML = '';
+  const list = getReservations();
+  const cellWidth = container.clientWidth / GRID_SLOTS;
 
-  document.querySelectorAll('input[name="f-tables"]').forEach(cb => cb.checked = false);
+  list.forEach(r => {
+    const rIdx = TABLES.findIndex(t => t.id === r.tableId); if (rIdx < 0) return;
+    const tMeta = TABLES[rIdx];
 
-  if (id) {
-    const rs = getReservations();
-    const r = rs.find(x => x.id === id); if (!r) return;
-    document.getElementById('f-name').value  = r.name;
-    document.getElementById('f-phone').value = r.phone;
-    document.getElementById('f-pax').value   = r.pax;
-    document.getElementById('f-note').value  = r.note;
-    setFormStartMin(r.startMin); setFormEndMin(r.endMin);
-    setSuffix(r.suffix);
+    const leftPercent = ((r.startMin - DAY_START) / DAY_MINS) * 100;
+    const widthPercent = ((r.endMin - r.startMin) / DAY_MINS) * 100;
 
-    if (r.groupId) {
-      rs.forEach(x => {
-        if (x.groupId === r.groupId) {
-          const cb = document.getElementById(`cb-${x.tableId}`);
-          if (cb) cb.checked = true;
-        }
-      });
-    } else {
-      const cb = document.getElementById(`cb-${r.tableId}`);
-      if (cb) cb.checked = true;
+    const b = document.createElement('div'); b.className = 'res-block'; b.id = `block-${r.id}`;
+    if (r.arrived) b.classList.add('arrived');
+    b.style.left = `${leftPercent}%`; b.style.width = `${widthPercent}%`;
+    b.style.top = `${6 + rIdx * 56}px`;
+    b.style.background = tMeta.bg; b.style.color = tMeta.fg; b.style.borderLeft = `3px solid ${tMeta.fg}`;
+
+    const nSpan = document.createElement('div'); nSpan.className = 'res-name';
+    nSpan.textContent = `${r.name}${r.suffix || ''} (${r.pax}人)`;
+    const tSpan = document.createElement('div'); tSpan.className = 'res-time';
+    tSpan.textContent = `${minToTimeStr(r.startMin)}–${minToTimeStr(r.endMin)}`;
+
+    b.appendChild(nSpan); b.appendChild(tSpan);
+    if (r.arrived) {
+      const icon = document.createElement('span'); icon.className = 'arrived-icon'; icon.textContent = '✓';
+      b.appendChild(icon);
     }
+
+    // Drag-and-Drop Event Bindings
+    b.addEventListener('mousedown', (e) => startDrag(e, r, b));
+    b.addEventListener('touchstart', (e) => startDrag(e, r, b), { passive: false });
+
+    // Context Menu Event Binding
+    b.addEventListener('contextmenu', (e) => { e.preventDefault(); showCtxMenu(e, r.id); });
+
+    // Hover Tooltip Events
+    b.addEventListener('mouseenter', (e) => showTooltip(e, r));
+    b.addEventListener('mousemove', moveTooltip);
+    b.addEventListener('mouseleave', hideTooltip);
+
+    container.appendChild(b);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// DRAG AND DROP ENGINE
+// ═══════════════════════════════════════════════════
+let dragData = null;
+function startDrag(e, res, element) {
+  if (e.button && e.button !== 0) return;
+  e.preventDefault(); e.stopPropagation(); hideCtxMenu();
+
+  const isTouch = e.type.startsWith('touch');
+  const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+  const container = document.getElementById('res-container');
+  const totalWidth = container.clientWidth;
+  const slotW = totalWidth / GRID_SLOTS;
+
+  const rs = getReservations();
+  let partnerBlocks = [];
+  let groupIds = [];
+
+  if (res.groupId) {
+    const groupMembers = rs.filter(x => x.groupId === res.groupId);
+    partnerBlocks = groupMembers.map(m => ({ res: m, el: document.getElementById(`block-${m.id}`) })).filter(p => p.el !== null);
+    groupIds = groupMembers.map(x => x.id);
   } else {
-    document.getElementById('f-name').value  = '';
-    document.getElementById('f-phone').value = '';
-    document.getElementById('f-pax').value   = '2';
-    document.getElementById('f-note').value  = '';
-    const n = new Date();
-    const curMin = Math.round((n.getHours() * 60 + n.getMinutes()) / 5) * 5;
-    const defStart = Math.max(DAY_START, Math.min(DAY_END - 120, curMin));
-    setFormStartMin(defStart); setFormEndMin(Math.min(DAY_END, defStart + 120));
-    setSuffix('先生');
-    if (TABLES.length > 0) {
-      const cb = document.getElementById(`cb-${TABLES[0].id}`);
-      if (cb) cb.checked = true;
+    partnerBlocks = [{ res, el: element }];
+    groupIds = [res.id];
+  }
+
+  partnerBlocks.forEach(p => { p.el.classList.add('dragging'); p.origLeft = parseFloat(p.el.style.left); p.origTop = parseFloat(p.el.style.top); });
+
+  dragData = {
+    isTouch, clientX, clientY, slotW, totalWidth, res, element, partnerBlocks, groupIds,
+    origStartMin: res.startMin, origEndMin: res.endMin, duration: res.endMin - res.startMin,
+    hasMoved: false
+  };
+
+  if (isTouch) {
+    window.addEventListener('touchmove', doDrag, { passive: false }); window.addEventListener('touchend', endDrag);
+  } else {
+    window.addEventListener('mousemove', doDrag); window.addEventListener('mouseup', endDrag);
+  }
+}
+
+function doDrag(e) {
+  if (!dragData) return; e.preventDefault();
+  const clientX = dragData.isTouch ? e.touches[0].clientX : e.clientX;
+  const clientY = dragData.isTouch ? e.touches[0].clientY : e.clientY;
+
+  const dx = clientX - dragData.clientX;
+  if (Math.abs(dx) > 4) dragData.hasMoved = true;
+
+  const slotIndexDelta = Math.round(dx / dragData.slotW);
+  const minDelta = slotIndexDelta * 30;
+
+  let targetStartMin = dragData.origStartMin + minDelta;
+  let targetEndMin = targetStartMin + dragData.duration;
+
+  if (targetStartMin < DAY_START) { targetStartMin = DAY_START; targetEndMin = targetStartMin + dragData.duration; }
+  if (targetEndMin > DAY_END) { targetEndMin = DAY_END; targetStartMin = targetEndMin - dragData.duration; }
+
+  const currentMinDelta = targetStartMin - dragData.origStartMin;
+
+  dragData.partnerBlocks.forEach(p => {
+    const pStart = p.res.startMin + currentMinDelta;
+    const pLeft = ((pStart - DAY_START) / DAY_MINS) * 100;
+    p.el.style.left = `${pLeft}%`;
+    const timeText = p.el.querySelector('.res-time');
+    if (timeText) timeText.textContent = `${minToTimeStr(pStart)}–${minToTimeStr(pStart + (p.res.endMin - p.res.startMin))}`;
+  });
+}
+
+function endDrag() {
+  if (!dragData) return;
+  if (dragData.isTouch) {
+    window.removeEventListener('touchmove', doDrag); window.removeEventListener('touchend', endDrag);
+  } else {
+    window.removeEventListener('mousemove', doDrag); window.removeEventListener('mouseup', endDrag);
+  }
+
+  dragData.partnerBlocks.forEach(p => p.el.classList.remove('dragging'));
+
+  if (!dragData.hasMoved) {
+    if (!dragData.isTouch) { dragData = null; return; }
+    const mockEvent = { clientX: dragData.clientX, clientY: dragData.clientY, preventDefault:()=>{} };
+    showCtxMenu(mockEvent, dragData.res.id); dragData = null; return;
+  }
+
+  const container = document.getElementById('res-container');
+  const finalLeftPercent = parseFloat(dragData.element.style.left);
+  const finalStartMin = Math.round((finalLeftPercent / 100) * DAY_MINS + DAY_START);
+  const minDelta = finalStartMin - dragData.origStartMin;
+
+  let conflictFound = null;
+  for (let p of dragData.partnerBlocks) {
+    const nS = p.res.startMin + minDelta; const nE = p.res.endMin + minDelta;
+    const conf = isConflict(p.res.tableId, nS, nE, dragData.groupId);
+    if (conf) { conflictFound = { p, conf }; break; }
+  }
+
+  if (conflictFound) {
+    alert(`⚠️ 拖曳衝突！${TABLES.find(t=>t.id===conflictFound.p.res.tableId).label} 在新時段已存在「${conflictFound.conf.name}${conflictFound.conf.suffix || ''}」的訂位。`);
+    render(); dragData = null; return;
+  }
+
+  dragData.partnerBlocks.forEach(p => { p.res.startMin += minDelta; p.res.endMin += minDelta; });
+  saveAll(); render(); dragData = null;
+}
+
+// ═══════════════════════════════════════════════════
+// TOOLTIP ENGINE
+// ═══════════════════════════════════════════════════
+function showTooltip(e, r) {
+  const t = document.getElementById('tooltip');
+  const tMeta = TABLES.find(x => x.id === r.tableId);
+  t.innerHTML = `<strong>${r.name}${r.suffix || ''} — ${tMeta ? tMeta.label : ''}</strong>
+                 👥 人數：${r.pax}人<br>
+                 ⏰ 時間：${minToTimeStr(r.startMin)} ～ ${minToTimeStr(r.endMin)}<br>
+                 📞 電話：${r.phone || '無'}<br>
+                 📝 備註：${r.note || '無'}`;
+  t.classList.add('show'); moveTooltip(e);
+}
+function moveTooltip(e) {
+  const t = document.getElementById('tooltip');
+  t.style.left = `${e.clientX + 14}px`; t.style.top = `${e.clientY + 14}px`;
+}
+function hideTooltip() { document.getElementById('tooltip').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════
+// CONTEXT MENU FUNCTIONS
+// ═══════════════════════════════════════════════════
+function showCtxMenu(e, id) {
+  ctxTargetId = id;
+  const menu = document.getElementById('ctx-menu');
+  menu.style.left = `${e.clientX}px`; menu.style.top = `${e.clientY}px`;
+  
+  const r = getReservations().find(x => x.id === id);
+  if (r) {
+    document.getElementById('ctx-arrived-btn').textContent = r.arrived ? '❌ 取消抵達' : '✔ 已抵達';
+    const highlightGroup = r.groupId;
+    if (highlightGroup) {
+      getReservations().forEach(x => {
+        if (x.groupId === highlightGroup) document.getElementById(`block-${x.id}`)?.classList.add('group-highlight');
+      });
     }
   }
+  
+  _cancelDelete();
+  menu.classList.add('show');
+
+  document.addEventListener('click', hideCtxMenuOnOutside);
+}
+
+function hideCtxMenu() {
+  document.getElementById('ctx-menu').classList.remove('show');
+  getReservations().forEach(x => { document.getElementById(`block-${x.id}`)?.classList.remove('group-highlight'); });
+  document.removeEventListener('click', hideCtxMenuOnOutside);
+}
+
+function hideCtxMenuOnOutside(e) {
+  if (!document.getElementById('ctx-menu').contains(e.target)) hideCtxMenu();
+}
+
+// Context Menu Actions Event Handlers
+document.getElementById('ctx-edit-btn').addEventListener('click', () => { if (ctxTargetId) openModal(ctxTargetId); hideCtxMenu(); });
+document.getElementById('ctx-arrived-btn').addEventListener('click', () => { if (ctxTargetId) toggleArrived(ctxTargetId); });
+document.getElementById('ctx-checkout-btn').addEventListener('click', () => { if (ctxTargetId) toggleCheckout(ctxTargetId); });
+document.getElementById('ctx-delete-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const r = getReservations().find(x => x.id === ctxTargetId);
+  if (r && r.groupId) {
+    pendingDeleteId = ctxTargetId;
+    document.getElementById('ctx-confirm-bar').style.display = 'flex';
+  } else {
+    if (confirm('確定要刪除這筆訂位嗎？')) { pendingDeleteId = ctxTargetId; _doDelete(); } else { hideCtxMenu(); }
+  }
+});
+document.getElementById('ctx-confirm-yes').addEventListener('click', _doDelete);
+document.getElementById('ctx-confirm-no').addEventListener('click', () => { _cancelDelete(); hideCtxMenu(); });
+
+// ═══════════════════════════════════════════════════
+// MODAL FORMS & DATE CONTROLS
+// ═══════════════════════════════════════════════════
+function openModal(id = null) {
+  editingId = id;
+  const title = document.getElementById('modal-title');
+  const cbs = document.getElementsByName('f-tables');
+
+  cbs.forEach(cb => { cb.checked = false; cb.disabled = false; });
+
+  if (id) {
+    title.textContent = '✏️ 編輯訂位';
+    const r = getReservations().find(x => x.id === id);
+    if (!r) return;
+
+    document.getElementById('f-name').value = r.name;
+    setSuffix(r.suffix || '先生');
+    document.getElementById('f-phone').value = r.phone || '';
+    document.getElementById('f-pax').value = r.pax || '2';
+    document.getElementById('f-note').value = r.note || '';
+
+    document.getElementById('f-start-h').value = Math.floor(r.startMin / 60);
+    document.getElementById('f-start-m').value = r.startMin % 60;
+    document.getElementById('f-end-h').value = Math.floor(r.endMin / 60);
+    document.getElementById('f-end-m').value = r.endMin % 60;
+
+    if (r.groupId) {
+      const groupTableIds = getReservations().filter(x => x.groupId === r.groupId).map(x => x.tableId);
+      cbs.forEach(cb => { if (groupTableIds.includes(cb.value)) cb.checked = true; });
+    } else {
+      cbs.forEach(cb => { if (cb.value === r.tableId) cb.checked = true; });
+    }
+  } else {
+    title.textContent = '新增訂位';
+    document.getElementById('f-name').value = '';
+    setSuffix('先生');
+    document.getElementById('f-phone').value = '';
+    document.getElementById('f-pax').value = '2';
+    document.getElementById('f-note').value = '';
+
+    const now = new Date();
+    let cH = now.getHours(); if (cH < 10 || cH > 17) cH = 10;
+    document.getElementById('f-start-h').value = cH;
+    document.getElementById('f-start-m').value = 0;
+    autoSetEndTime();
+  }
+
   document.getElementById('modal-overlay').classList.add('open');
 }
 
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingId = null; }
-function closeModalOnBg(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+function closeModalOnBg(e) { if (e.target.id === 'modal-overlay') closeModal(); }
 
 function setSuffix(s) {
   suffix = s;
@@ -1228,52 +1217,44 @@ function setSuffix(s) {
 function saveReservation() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
-  const pax = document.getElementById('f-pax').value;
+  const pax = document.getElementById('f-pax').value.trim() || '2';
   const note = document.getElementById('f-note').value.trim();
 
-  if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
+  const sh = parseInt(document.getElementById('f-start-h').value);
+  const sm = parseInt(document.getElementById('f-start-m').value);
+  const eh = parseInt(document.getElementById('f-end-h').value);
+  const em = parseInt(document.getElementById('f-end-m').value);
 
-  const purePhone = phone.replace(/\D/g, '');
-  if (!purePhone) { alert('請填寫聯絡電話！'); return; }
-  if (purePhone.length !== 10) { alert(`⚠️ 電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`); return; }
-  if (!purePhone.startsWith('09')) { alert('⚠️ 電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。'); return; }
+  const startMin = sh * 60 + sm; const endMin = eh * 60 + em;
 
-  const startMin = getFormStartMin();
-  const endMin   = getFormEndMin();
+  if (!name) { alert('請輸入訂位人姓名！'); return; }
+  if (startMin >= endMin) { alert('結束時間必須大於開始時間！'); return; }
 
-  if (endMin <= startMin) { alert('結束時間不能早於或等於開始時間！'); return; }
-  if (startMin < DAY_START || endMin > DAY_END) { alert(`本店營業時間為 10:30 ～ 18:00`); return; }
-
+  const cbs = document.getElementsByName('f-tables');
   const checkedTableIds = [];
-  document.querySelectorAll('input[name="f-tables"]:checked').forEach(cb => {
-    checkedTableIds.push(cb.value);
-  });
-
+  cbs.forEach(cb => { if (cb.checked) checkedTableIds.push(cb.value); });
   if (checkedTableIds.length === 0) { alert('請至少勾選指派一個桌號！'); return; }
 
+  const purePhone = phone.replace(/[^0-9-]/g, '');
   const rs = getReservations();
-  
+
   let excludeIds = [];
   if (editingId) {
-    const oldRes = rs.find(x => x.id === editingId);
-    if (oldRes && oldRes.groupId) {
-      excludeIds = rs.filter(x => x.groupId === oldRes.groupId).map(x => x.id);
-    } else if (oldRes) {
-      excludeIds = [oldRes.id];
+    const oldR = rs.find(x => x.id === editingId);
+    if (oldR) {
+      excludeIds = oldR.groupId ? rs.filter(x => x.groupId === oldR.groupId).map(x => x.id) : [oldR.id];
     }
   }
 
   for (let tId of checkedTableIds) {
     const conflict = isConflict(tId, startMin, endMin, excludeIds);
     if (conflict) {
-      alert(`⚠️ 時間發生衝突！\n${TABLES.find(t => t.id === tId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有「${conflict.name}${conflict.suffix}」的訂位。`);
+      alert(`⚠️ 時間發生衝突！\n${TABLES.find(t => t.id === tId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有「${conflict.name}${conflict.suffix || ''}」的訂位。`);
       return;
     }
   }
 
-  if (editingId) {
-    reservationsByDate[currentDate] = rs.filter(x => !excludeIds.includes(x.id));
-  }
+  if (editingId) { reservationsByDate[currentDate] = rs.filter(x => !excludeIds.includes(x.id)); }
 
   const generatedGroupId = checkedTableIds.length > 1 ? 'g_' + Date.now() + Math.random().toString(36).slice(2,5) : null;
   const currentRs = getReservations();
@@ -1281,39 +1262,48 @@ function saveReservation() {
   checkedTableIds.forEach(tId => {
     const newId = 'r' + Date.now() + Math.random().toString(36).slice(2,6);
     currentRs.push({
-      id: newId,
-      groupId: generatedGroupId,
-      name,
-      suffix,
-      phone: purePhone,
-      pax,
-      note,
-      tableId: tId,
-      startMin,
-      endMin,
-      arrived: false
+      id: newId, groupId: generatedGroupId, name, suffix, phone: purePhone, pax, note,
+      tableId: tId, startMin, endMin, arrived: false
     });
   });
 
-  saveAll(); render();
-  closeModal();
+  saveAll(); render(); closeModal();
 }
 
-// ═══════════════════════════════════════════════════
-// 頁面加載控制
-// ═══════════════════════════════════════════════════
-window.addEventListener('resize', () => {
-  if (sessionStorage.getItem('is_cafe_admin') === 'true') render();
-});
+function switchDate(dateStr) {
+  currentDate = dateStr;
+  document.getElementById('date-picker').value = dateStr;
 
-// 頁面一載入的生命週期
-(() => {
-  // 檢查是否已經通過密碼驗證（免密鎖機制）
+  const lbl = document.getElementById('gantt-date-label');
+  if (lbl) {
+    const isToday = (dateStr === todayStr());
+    lbl.className = isToday ? 'is-today' : '';
+    lbl.textContent = dateStr + (isToday ? ' (今日)' : '');
+  }
+
+  if (FB_ENABLED && db) {
+    loadDateFromFirebase(dateStr).then(() => render());
+  } else {
+    render();
+  }
+}
+
+function shiftDate(days) {
+  const current = new Date(currentDate); current.setDate(current.getDate() + days);
+  const y = current.getFullYear(); const m = String(current.getMonth()+1).padStart(2,'0'); const d = String(current.getDate()).padStart(2,'0');
+  switchDate(`${y}-${m}-${d}`);
+}
+
+window.addEventListener('resize', render);
+
+// 🏁 系統最初進入點
+(async () => {
+  // 檢查是否在此頁籤內已經成功驗證過
   if (sessionStorage.getItem('is_cafe_admin') === 'true') {
     document.getElementById('auth-overlay').style.display = 'none';
     startSystem();
   } else {
-    // 沒登入過，強制守在密碼輸入框，什麼都不加載
+    // 尚未驗證，強制鎖定螢幕並焦點在密碼框
     document.getElementById('auth-password').focus();
   }
 })();
