@@ -931,15 +931,42 @@ function render() {
 
   rs.forEach(r => {
     if (r.groupId) {
-      // 如果這筆訂位有多桌聯動，且這個群組還沒畫過
+      // 如果這筆訂位有多桌聯動，且這個群組還沒處理過
       if (!renderedGroups.has(r.groupId)) {
-        // 撈出這個群組在今天的所有關聯訂位
+        // 撈出這個群組在今天的所有關聯訂位資料
         const groupItems = rs.filter(x => x.groupId === r.groupId);
-        renderMergedBlock(groupItems);
+        
+        // 將每筆資料換算成在 TABLES 裡的 Row Index，並由小到大排序
+        const sortedItems = groupItems
+          .map(item => ({ item, idx: TABLES.findIndex(t => t.id === item.tableId) }))
+          .filter(obj => obj.idx !== -1)
+          .sort((a, b) => a.idx - b.idx);
+
+        if (sortedItems.length === 0) return;
+
+        // 找出所有「連續相連」的分組
+        let currentSubGroup = [sortedItems[0].item];
+        let lastIdx = sortedItems[0].idx;
+
+        for (let i = 1; i < sortedItems.length; i++) {
+          if (sortedItems[i].idx === lastIdx + 1) {
+            // 索引值+1，垂直方向相連，加入同一個大框框群組
+            currentSubGroup.push(sortedItems[i].item);
+          } else {
+            // 索引值跳號（不連續），先把前一個連續的區塊畫成大框框，然後開啟一個全新獨立的框框群組
+            renderMergedBlock(currentSubGroup);
+            currentSubGroup = [sortedItems[i].item];
+          }
+          lastIdx = sortedItems[i].idx;
+        }
+        // 畫出最後一個分組（不論是融合大框還是獨立單框）
+        renderMergedBlock(currentSubGroup);
+        
+        // 標記此群組已處理完畢，避免重複執行
         renderedGroups.add(r.groupId);
       }
     } else {
-      // 單一桌子的訂位，維持原樣畫法
+      // 單一桌子的訂位，自己一框
       renderMergedBlock([r]);
     }
   });
