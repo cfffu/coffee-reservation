@@ -601,7 +601,7 @@ const FIREBASE_CONFIG = {
   appId:             "1:811749907224:web:480395a49f853bc4305c6d",
   measurementId:     "G-4KC5LQ9560"
 };
-const FB_ENABLED = FIREBASE_CONFIG.apiKey !== "AIzaSyCAlWYyeJOhvqpxJRXFQmNCrV-0CGYdEhE";
+const FB_ENABLED = true;
 let db = null;
 if (FB_ENABLED) {
   firebase.initializeApp(FIREBASE_CONFIG);
