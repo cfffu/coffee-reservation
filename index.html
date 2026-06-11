@@ -534,6 +534,7 @@
 <div id="ctx-menu">
   <button class="ctx-btn" id="ctx-edit-btn">✏️ 編輯訂位</button>
   <button class="ctx-btn" id="ctx-arrived-btn">✔ 已抵達</button>
+  <button class="ctx-btn" id="ctx-checkout-btn">🚪 已離開 (釋出空桌)</button>
   <button class="ctx-btn danger" id="ctx-delete-btn">🗑 刪除訂位</button>
   <div id="ctx-confirm-bar" style="display:none">
     <span style="font-size:.72rem;color:#c0392b;padding:4px 4px 4px 10px;letter-spacing:.04em">確定？</span>
@@ -722,6 +723,38 @@ function toggleArrived(id) {
   const r = getReservations().find(x => x.id === id); if (!r) return;
   r.arrived = !r.arrived;
   saveAll(); render();
+}
+  
+function checkoutReservation(id) {
+  if (!id) return;
+  const r = getReservations().find(x => x.id === id); 
+  if (!r) return;
+  
+  // 取得目前的系統時間（小時與分鐘）
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  
+  // 防呆 1：如果客人在營業時間前就按離開，或是還沒到訂位開始時間就按離開
+  if (nowMin <= r.startMin) {
+    alert("⚠️ 客人尚未到達或尚未到開始時間，無法執行離開釋出！\n如果是提早取消，請直接使用「刪除訂位」。");
+    return;
+  }
+  
+  // 防呆 2：如果目前時間早就超過原本的結束時間，就不需要切斷了
+  if (nowMin >= r.endMin) {
+    alert("訂位時間本來就已經結束囉！");
+    return;
+  }
+
+  // 將結束時間校正為「現在時間」（以 5 分鐘為單位防呆，或者直接用精確分鐘）
+  const roundedNowMin = Math.round(nowMin / 5) * 5;
+  r.endMin = Math.max(r.startMin + 5, roundedNowMin); // 確保至少有 5 分鐘寬度
+  
+  // 標記已離開（選用，也可以不加，純切斷時間）
+  r.checkout = true; 
+  
+  saveAll(); 
+  render();
 }
 
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
@@ -963,10 +996,6 @@ function showCtxMenu(x, y) {
   menu.style.left = Math.max(10, safeX) + 'px'; menu.style.top = safeY + 'px';
 }
 function hideCtxMenu() { document.getElementById('ctx-menu').classList.remove('show'); _cancelDelete(); }
-
-// ═══════════════════════════════════════════════════
-// 修正後的選單點擊控制（改用 click 並精準防止冒泡）
-// ═══════════════════════════════════════════════════
 document.getElementById('ctx-edit-btn').addEventListener('click', e => { 
   e.stopPropagation(); 
   hideCtxMenu(); 
@@ -1001,6 +1030,12 @@ document.getElementById('ctx-confirm-no').addEventListener('click', e => {
 // 點擊選單本體時，也阻止冒泡，確保在選單內點任何地方都不會誤關選單
 document.getElementById('ctx-menu').addEventListener('click', e => {
   e.stopPropagation();
+});
+
+document.getElementById('ctx-checkout-btn').addEventListener('click', e => { 
+  e.stopPropagation(); 
+  hideCtxMenu(); 
+  checkoutReservation(ctxTargetId); 
 });
 
 // 只有點擊選單以外的空白地方，才會關閉選單
