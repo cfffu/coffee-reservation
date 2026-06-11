@@ -722,7 +722,6 @@ async function loadAll() {
   if (FB_ENABLED) { const ok = await loadDateFromFirebase(currentDate); if (ok) render(); }
 }
 
-// 🔐 密碼登入核心邏輯（修復：驗證成功後才觸發系統初始載入與渲染）
 function checkPassword() {
   const inputPass = document.getElementById('auth-password').value;
   const errorEl = document.getElementById('auth-error');
@@ -926,7 +925,115 @@ function render() {
   const container = document.getElementById('res-container');
   if (!container) return; 
   container.innerHTML = '';
-  getReservations().forEach(r => renderBlock(r));
+  
+  const rs = getReservations();
+  const renderedGroups = new Set();
+
+  rs.forEach(r => {
+    if (r.groupId) {
+      // 如果這筆訂位有多桌聯動，且這個群組還沒畫過
+      if (!renderedGroups.has(r.groupId)) {
+        // 撈出這個群組在今天的所有關聯訂位
+        const groupItems = rs.filter(x => x.groupId === r.groupId);
+        renderMergedBlock(groupItems);
+        renderedGroups.add(r.groupId);
+      }
+    } else {
+      // 單一桌子的訂位，維持原樣畫法
+      renderMergedBlock([r]);
+    }
+  });
+}
+
+function renderMergedBlock(items) {
+  const container = document.getElementById('res-container');
+  if (!container || items.length === 0) return;
+
+  // 拿第一筆資料當作主導資料（姓名、時間、電話等都一樣）
+  const r = items[0];
+  
+  // 找出這群桌子在 TABLES 定義裡面的索引位置 (Row Index)
+  const rowIndices = items.map(item => TABLES.findIndex(t => t.id === item.tableId)).filter(idx => idx !== -1);
+  if (rowIndices.length === 0) return;
+
+  // 計算垂直邊界：最上面那一桌與最下面那一桌
+  const minRowIdx = Math.min(...rowIndices);
+  const maxRowIdx = Math.max(...rowIndices);
+  const totalRowsSpan = (maxRowIdx - minRowIdx) + 1; // 跨越了幾列
+
+  // 取得主桌子的顏色設定
+  const mainTable = TABLES.find(t => t.id === r.tableId) || TABLES[0];
+
+  // 計算水平位置（時間軸百分比）
+  const leftPercent = ((r.startMin - DAY_START) / DAY_MINS) * 100;
+  const widthPercent = ((r.endMin - r.startMin) / DAY_MINS) * 100;
+  
+  const rowHeight = 56;
+  // 頂部位置由最上面那一桌決定
+  const topPx = minRowIdx * rowHeight + 6;
+  // 高度則由跨越的總列數決定，扣掉上下間距
+  const blockHeight = (totalRowsSpan * rowHeight) - 12;
+
+  const block = document.createElement('div');
+  block.className = 'res-block';
+  block.id = 'rb-' + r.id; 
+  if (r.groupId) {
+    block.setAttribute('data-group-id', r.groupId);
+  }
+  
+  // 賦予融合大框框的樣式
+  block.style.left = `${leftPercent}%`;
+  block.style.width = `${widthPercent}%`;
+  block.style.top = `${topPx}px`;
+  block.style.height = `${blockHeight}px`;
+  block.style.background = mainTable.bg;
+  block.style.color = mainTable.fg;
+  block.style.border = `1.5px solid ${mainTable.fg}40`;
+  
+  // 如果跨很多桌，稍微調整排版讓文字置中好看
+  if (totalRowsSpan > 1) {
+    block.style.justifyContent = 'center';
+  }
+
+  // 顯示文字
+  const groupTag = r.groupId ? `<span style="font-size:10px;opacity:0.75;display:inline-block;margin-left:4px;">(併${items.length}桌)</span>` : '';
+  block.innerHTML = `
+    <div class="res-name" style="font-weight:600;">${r.name}${r.suffix}${groupTag}</div>
+    <div class="res-time">${minToTimeStr(r.startMin)}～${minToTimeStr(r.endMin)}</div>
+  `;
+
+  // 已抵達狀態（大框框的左側會整條變粗線）
+  if (r.arrived) {
+    block.classList.add('arrived');
+    block.style.borderLeft = `6px solid ${mainTable.fg}`;
+    const icon = document.createElement('div'); 
+    icon.className = 'arrived-icon'; 
+    icon.textContent = '✔';
+    // 如果大框框很大，把勾勾放到右上角避免擋到字
+    if (totalRowsSpan > 1) {
+      icon.style.top = '14px';
+      icon.style.transform = 'none';
+    }
+    block.appendChild(icon);
+  }
+
+  // 滑鼠懸停（Tooltip 提示與高亮）
+  block.addEventListener('mouseenter', e => showTooltip(e, r));
+  block.addEventListener('mousemove',  e => moveTooltip(e));
+  block.addEventListener('mouseleave', () => hideTooltip());
+
+  // 右鍵選單或點擊
+  block.addEventListener('contextmenu', e => {
+    e.preventDefault(); e.stopPropagation();
+    ctxTargetId = r.id; hideTooltip();
+    updateCtxArrivedLabel(r.arrived);
+    showCtxMenu(e.clientX, e.clientY);
+  });
+
+  // 讓融合大框框也支援拖曳
+  makeDraggable(block, r, items);
+  
+  container.appendChild(block);
 }
 
 function renderBlock(r) {
@@ -999,7 +1106,7 @@ function updateCtxArrivedLabel(arrived) {
   document.getElementById('ctx-arrived-btn').textContent = arrived ? '✔ 取消抵達狀態' : '✔ 切換為已抵達';
 }
 
-function makeDraggable(block, r) {
+function makeDraggable(block, r, items) {
   block.addEventListener('pointerdown', e => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
     e.stopPropagation(); e.preventDefault();
@@ -1053,39 +1160,70 @@ function makeDraggable(block, r) {
       const finalDy = up.clientY - initialY;
       block.style.transform = '';
 
+      // 1. 計算新的時間軸位置 (X)
       const finalLeftPx = startLeftPx + finalDx;
-      const finalTopPx = startTopPx + finalDy;
-
       const ratio = finalLeftPx / containerRect.width;
       let newStartMin = DAY_START + ratio * DAY_MINS;
       newStartMin = Math.round(newStartMin / 5) * 5; 
       const clampedStart = Math.max(DAY_START, Math.min(DAY_END - duration, newStartMin));
       const clampedEnd = clampedStart + duration;
 
-      let newRowIdx = Math.floor((finalTopPx + (rowHeight / 2)) / rowHeight);
-      newRowIdx = Math.max(0, Math.min(TABLES.length - 1, newRowIdx));
-      const newTableId = TABLES[newRowIdx].id;
+      // 2. 計算垂直移動了幾個 Row 的間距 (Y)
+      const currentTopPx = startTopPx + finalDy;
+      // 找出原本這群 items 裡面最頂端那一桌的 row index
+      const originalRowIndices = items.map(item => TABLES.findIndex(t => t.id === item.tableId));
+      const originalMinRowIdx = Math.min(...originalRowIndices);
+      
+      // 計算移動後的全新最頂端 row index
+      let newMinRowIdx = Math.round(currentTopPx / rowHeight);
+      let rowDelta = newMinRowIdx - originalMinRowIdx; // 相差幾列
 
       const rs = getReservations();
-      const conflict = isConflict(newTableId, clampedStart, clampedEnd, [r.id]);
-      if (conflict) {
-        alert(`⚠️ 無法移動！\n${TABLES.find(t=>t.id===newTableId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 段已有「${conflict.name}${conflict.suffix}」的預約。`);
+      // 收集整組需要排除檢查的 ID
+      const excludeIds = items.map(x => x.id);
+
+      // 檢查移動後的每一張新桌子是否會撞到別人
+      let hasConflict = false;
+      let conflictMsg = "";
+      const updatedTableMappings = [];
+
+      for (let item of items) {
+        const oldRowIdx = TABLES.findIndex(t => t.id === item.tableId);
+        let newRowIdx = oldRowIdx + rowDelta;
+        
+        // 邊界防呆：如果整組移出桌位圖外面，就彈回
+        if (newRowIdx < 0 || newRowIdx >= TABLES.length) {
+          hasConflict = true;
+          conflictMsg = "⚠️ 超出桌位系統範圍！";
+          break;
+        }
+
+        const newTableId = TABLES[newRowIdx].id;
+        const conflict = isConflict(newTableId, clampedStart, clampedEnd, excludeIds);
+        if (conflict) {
+          hasConflict = true;
+          conflictMsg = `⚠️ 無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已有預約。`;
+          break;
+        }
+        updatedTableMappings.push({ id: item.id, newTableId });
+      }
+
+      if (hasConflict) {
+        alert(conflictMsg);
         render();
         return;
       }
 
-      const idx = rs.findIndex(x => x.id === r.id);
-      if (idx !== -1) {
-        rs[idx] = { ...rs[idx], startMin: clampedStart, endMin: clampedEnd, tableId: newTableId };
-        if (r.groupId) {
-          rs.forEach(x => {
-            if (x.groupId === r.groupId) {
-              x.startMin = clampedStart;
-              x.endMin = clampedEnd;
-            }
-          });
+      // 3. 真正寫入更新資料
+      updatedTableMappings.forEach(mapping => {
+        const targetRes = rs.find(x => x.id === mapping.id);
+        if (targetRes) {
+          targetRes.startMin = clampedStart;
+          targetRes.endMin = clampedEnd;
+          targetRes.tableId = mapping.newTableId;
         }
-      }
+      });
+
       saveAll(); render();
     };
 
