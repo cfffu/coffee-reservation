@@ -410,15 +410,85 @@
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--latte); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--latte); border-radius: 10px; 
+
+  /* ── 密碼鎖全螢幕遮罩 ──────────────────────────────── */
+  .auth-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* 確保在最上層 */
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  .auth-box {
+    background: var(--cream);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    text-align: center;
+    width: 340px;
+    max-width: 90vw;
+  }
+  .auth-box h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--espresso);
+    margin-bottom: 8px;
+  }
+  .auth-box p {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+  .auth-box input[type=password] {
+    text-align: center;
+    letter-spacing: 0.3em;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+  .auth-error {
+    color: #c0392b;
+    font-size: 0.75rem;
+    margin-top: -10px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .btn-login {
+    background: var(--espresso);
+    color: var(--cream);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 0;
+    width: 100%;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 3px 12px rgba(100,60,20,.15);
+  }
+  .btn-login:hover {
+    background: #5a3a1a;
+  }
 </style>
 </head>
 <body>
 
-<div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
-  ☁️ <strong>Firebase 未設定</strong>，目前使用 localStorage（僅此裝置可見）。<br>
-  如需跨裝置同步，請在程式碼頂端填入你的 Firebase 設定。
-  <button onclick="this.parentElement.style.display='none'" style="float:right;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;margin-left:10px">✕</button>
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <h2>🔑 系統管理員登入</h2>
+    <p>MANAGEMENT LOGIN</p>
+    <input type="password" id="auth-password" placeholder="請輸入管理者密碼" onkeydown="if(event.key==='Enter') checkPassword()">
+    <div class="auth-error" id="auth-error">❌ 密碼錯誤，請再試一次</div>
+    <button class="btn-login" onclick="checkPassword()">確認登入</button>
+  </div>
 </div>
 
 <header>
@@ -997,6 +1067,30 @@ function saveReservation() {
 
   upsertReservation({ id: editingId, name, suffix, phone, pax, note, tableId, startMin, endMin });
   closeModal();
+}
+
+// ═══════════════════════════════════════════════════
+// 管理者密碼密鑰設定
+// ═══════════════════════════════════════════════════
+const ADMIN_PASSWORD = "cafe1234"; // 👈 你可以在這裡修改你的密碼
+
+function checkPassword() {
+  const inputPass = document.getElementById('auth-password').value;
+  const errorEl = document.getElementById('auth-error');
+  const overlayEl = document.getElementById('auth-overlay');
+  
+  if (inputPass === ADMIN_PASSWORD) {
+    // 密碼正確：淡出並移除遮罩
+    overlayEl.style.opacity = '0';
+    setTimeout(() => {
+      overlayEl.style.display = 'none';
+    }, 300);
+  } else {
+    // 密碼錯誤：顯示錯誤訊息並清空輸入框
+    errorEl.style.display = 'block';
+    document.getElementById('auth-password').value = '';
+    document.getElementById('auth-password').focus();
+  }
 }
 
 // ═══════════════════════════════════════════════════
