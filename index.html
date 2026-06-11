@@ -452,6 +452,12 @@
     letter-spacing: 0.3em;
     font-size: 1.1rem;
     margin-bottom: 16px;
+    /* ═══════════════════════════════════════════════════
+       新增：彈性響應式寬度設計
+       ═══════════════════════════════════════════════════ */
+    width: 100%;           /* 預設填滿父容器（在手機版會依據外框自動縮放） */
+    max-width: 260px;      /* 限制最大寬度，避免在大螢幕上拉得太長變形 */
+    box-sizing: border-box; /* 確保內襯 padding 不會撐破外框 */
   }
   .auth-error {
     color: #c0392b;
@@ -958,11 +964,46 @@ function showCtxMenu(x, y) {
 }
 function hideCtxMenu() { document.getElementById('ctx-menu').classList.remove('show'); _cancelDelete(); }
 
-document.getElementById('ctx-edit-btn').addEventListener('pointerdown', e => { e.stopPropagation(); hideCtxMenu(); openModal(ctxTargetId); });
-document.getElementById('ctx-arrived-btn').addEventListener('pointerdown', e => { e.stopPropagation(); hideCtxMenu(); toggleArrived(ctxTargetId); });
-document.getElementById('ctx-delete-btn').addEventListener('pointerdown', e => { e.stopPropagation(); pendingDeleteId = ctxTargetId; document.getElementById('ctx-confirm-bar').style.display = 'flex'; });
-document.getElementById('ctx-confirm-yes').addEventListener('pointerdown', e => { e.stopPropagation(); _doDelete(); });
-document.getElementById('ctx-confirm-no').addEventListener('pointerdown', e => { e.stopPropagation(); _cancelDelete(); });
+// ═══════════════════════════════════════════════════
+// 修正後的選單點擊控制（改用 click 並精準防止冒泡）
+// ═══════════════════════════════════════════════════
+document.getElementById('ctx-edit-btn').addEventListener('click', e => { 
+  e.stopPropagation(); 
+  hideCtxMenu(); 
+  openModal(ctxTargetId); 
+});
+
+document.getElementById('ctx-arrived-btn').addEventListener('click', e => { 
+  e.stopPropagation(); 
+  hideCtxMenu(); 
+  toggleArrived(ctxTargetId); 
+});
+
+// 點擊「刪除訂位」時，顯示確認欄，並阻止事件外傳（不讓選單關閉）
+document.getElementById('ctx-delete-btn').addEventListener('click', e => { 
+  e.stopPropagation(); 
+  pendingDeleteId = ctxTargetId; 
+  document.getElementById('ctx-confirm-bar').style.display = 'flex'; 
+});
+
+// 點擊「確定刪除」
+document.getElementById('ctx-confirm-yes').addEventListener('click', e => { 
+  e.stopPropagation(); 
+  _doDelete(); 
+});
+
+// 點擊「取消刪除」
+document.getElementById('ctx-confirm-no').addEventListener('click', e => { 
+  e.stopPropagation(); 
+  _cancelDelete(); 
+});
+
+// 點擊選單本體時，也阻止冒泡，確保在選單內點任何地方都不會誤關選單
+document.getElementById('ctx-menu').addEventListener('click', e => {
+  e.stopPropagation();
+});
+
+// 只有點擊選單以外的空白地方，才會關閉選單
 document.addEventListener('click', () => hideCtxMenu());
 
 // ═══════════════════════════════════════════════════
