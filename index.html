@@ -717,25 +717,51 @@ async function loadAll() {
   if (FB_ENABLED) { const ok = await loadDateFromFirebase(currentDate); if (ok) render(); }
 }
 
+// 🔐 密碼登入核心邏輯（修復：驗證成功後才觸發系統初始載入與渲染）
 function checkPassword() {
   const inputPass = document.getElementById('auth-password').value;
   const errorEl = document.getElementById('auth-error');
   const overlayEl = document.getElementById('auth-overlay');
-  const appEl = document.getElementById('main-app');
   
-  if (inputPass === "cafe1234") {
+  if (inputPass === "cafe1234") {     /*///////////////////////////////////////////////////// 密碼在這 /////////////////////////////////////////////////////*/
     sessionStorage.setItem('is_cafe_admin', 'true');
-    appEl.style.display = 'block';
     overlayEl.style.opacity = '0';
     setTimeout(() => {
       overlayEl.style.display = 'none';
-      render(); 
+      // 驗證成功後，才正式解鎖並啟動系統資料
+      startSystem();
     }, 300);
   } else {
     errorEl.style.display = 'block';
     document.getElementById('auth-password').value = '';
     document.getElementById('auth-password').focus();
   }
+}
+
+// 🚀 正式初始化整個訂位儀表板
+async function startSystem() {
+  document.getElementById('main-app').style.display = 'block';
+  
+  buildGantt();
+  buildLegend();
+  buildTableCheckboxes(); 
+  buildTimeSelects();
+  
+  if (!FB_ENABLED) document.getElementById('fb-banner').style.display = 'block';
+  await loadAll();
+  
+  // 若完全無資料，塞入測試 Demo 預約單
+  if (Object.keys(reservationsByDate).length === 0) {
+    const td = todayStr();
+    reservationsByDate[td] = [
+      { id:'s1', groupId: null, name:'陳', suffix:'小姐', phone:'0912111222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60, endMin:13*60 },
+      { id:'s3_1', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb1', startMin:13*60, endMin:16*60 },
+      { id:'s3_2', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb2', startMin:13*60, endMin:16*60 },
+      { id:'s4', groupId: null, name:'張', suffix:'小姐', phone:'0922444555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60, endMin:12*60 },
+      { id:'s5', groupId: null, name:'李', suffix:'先生', phone:'0988555666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 }
+    ];
+  }
+  switchDate(todayStr());
 }
 
 function timeStrToMin(str) {
@@ -893,7 +919,7 @@ function buildLegend() {
 // ═══════════════════════════════════════════════════
 function render() {
   const container = document.getElementById('res-container');
-  if (!container) return; // 防呆確保容器存在
+  if (!container) return; 
   container.innerHTML = '';
   getReservations().forEach(r => renderBlock(r));
 }
@@ -1274,36 +1300,22 @@ function saveReservation() {
 }
 
 // ═══════════════════════════════════════════════════
-// INITIALIZATION
+// 頁面加載控制
 // ═══════════════════════════════════════════════════
-buildGantt();
-buildLegend();
-buildTableCheckboxes(); 
-buildTimeSelects();
+window.addEventListener('resize', () => {
+  if (sessionStorage.getItem('is_cafe_admin') === 'true') render();
+});
 
-window.addEventListener('resize', render);
-
-(async () => {
-  // 自動免密鎖處理（若是已登入狀態）
+// 頁面一載入的生命週期
+(() => {
+  // 檢查是否已經通過密碼驗證（免密鎖機制）
   if (sessionStorage.getItem('is_cafe_admin') === 'true') {
     document.getElementById('auth-overlay').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
+    startSystem();
+  } else {
+    // 沒登入過，強制守在密碼輸入框，什麼都不加載
+    document.getElementById('auth-password').focus();
   }
-
-  if (!FB_ENABLED) document.getElementById('fb-banner').style.display = 'block';
-  await loadAll();
-  
-  if (Object.keys(reservationsByDate).length === 0) {
-    const td = todayStr();
-    reservationsByDate[td] = [
-      { id:'s1', groupId: null, name:'陳', suffix:'小姐', phone:'0912111222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60, endMin:13*60 },
-      { id:'s3_1', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb1', startMin:13*60, endMin:16*60 },
-      { id:'s3_2', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb2', startMin:13*60, endMin:16*60 },
-      { id:'s4', groupId: null, name:'張', suffix:'小姐', phone:'0922444555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60, endMin:12*60 },
-      { id:'s5', groupId: null, name:'李', suffix:'先生', phone:'0988555666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 }
-    ];
-  }
-  switchDate(todayStr());
 })();
 </script>
 </body>
