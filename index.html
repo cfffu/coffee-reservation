@@ -208,7 +208,7 @@
     -webkit-user-select: none;
     z-index: 10;
     box-shadow: 0 2px 10px rgba(0,0,0,.12);
-    transition: transform .15s, box-shadow .15s, opacity .15s;
+    transition: transform .15s, box-shadow .15s, opacity .15s, border .15s;
     overflow: hidden;
     pointer-events: auto;
     touch-action: none;
@@ -217,6 +217,11 @@
     transform: translateY(-1px) scale(1.01);
     box-shadow: 0 6px 18px rgba(0,0,0,.18);
     z-index: 20;
+  }
+  /* 當同組別發光時的 CSS */
+  .res-block.group-highlight {
+    box-shadow: 0 0 0 3px #e67e22, 0 4px 15px rgba(230, 126, 34, 0.4) !important;
+    z-index: 25;
   }
   .res-block.dragging {
     opacity: .85;
@@ -330,7 +335,7 @@
     background: var(--cream);
     border-radius: 20px;
     padding: 36px 40px 32px;
-    width: 420px;
+    width: 440px;
     max-width: 92vw;
     box-shadow: 0 20px 60px rgba(60,30,10,.22);
     transform: translateY(16px) scale(.97);
@@ -378,6 +383,35 @@
     box-shadow: 0 0 0 3px rgba(180,140,90,.15);
   }
 
+  /* 桌號複選外框樣式 */
+  .table-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+    background: var(--bg);
+    padding: 12px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  .table-cb-label {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem !important;
+    color: var(--text) !important;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0 !important;
+  }
+  .table-cb-label input {
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    accent-color: var(--espresso);
+  }
+
   .suffix-group { display: flex; gap: 8px; align-items: center; flex: 1; }
   .suffix-group input { flex: 1; }
   .suffix-btn {
@@ -400,7 +434,7 @@
     padding: 11px 30px; font-family: 'Noto Serif TC', serif; font-size: .82rem;
     letter-spacing: .1em; cursor: pointer; transition: all .2s; box-shadow: 0 3px 12px rgba(100,60,20,.22);
   }
-  .btn-save:hover { background: #5a3a1a; transform: translateY(-1px); }
+  .btn-save:hover { background: #5a3a1a; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(100,60,20,.28); }
   .btn-cancel { background: none; border: none; color: var(--text-light); font-family: 'Noto Serif TC', serif; font-size: .78rem; cursor: pointer; letter-spacing: .06em; transition: color .15s; }
   .btn-cancel:hover { color: var(--text); }
 
@@ -447,17 +481,15 @@
     letter-spacing: 0.1em;
     margin-bottom: 24px;
   }
+  /* 修正：輸入框 RWD */
   .auth-box input[type=password] {
     text-align: center;
     letter-spacing: 0.3em;
     font-size: 1.1rem;
     margin-bottom: 16px;
-    /* ═══════════════════════════════════════════════════
-       新增：彈性響應式寬度設計
-       ═══════════════════════════════════════════════════ */
-    width: 100%;           /* 預設填滿父容器（在手機版會依據外框自動縮放） */
-    max-width: 260px;      /* 限制最大寬度，避免在大螢幕上拉得太長變形 */
-    box-sizing: border-box; /* 確保內襯 padding 不會撐破外框 */
+    width: 100%;
+    max-width: 260px;
+    box-sizing: border-box;
   }
   .auth-error {
     color: #c0392b;
@@ -497,7 +529,7 @@
 
 <div id="main-app" style="display: none;">
 
-<div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
+  <div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
     ☁️ <strong>Firebase 未設定</strong>，目前使用 localStorage（僅此裝置可見）。<br>
     如需跨裝置同步，請在程式碼頂端填入你的 Firebase 設定。
     <button onclick="this.parentElement.style.display='none'" style="float:right;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;margin-left:10px">✕</button>
@@ -505,7 +537,7 @@
 
   <header>
     <div class="brand">
-      <h1>☕ 拾柒cafe訂位系統</h1>
+      <h1>☕ 拾柒cafe訂位管理系統</h1>
       <p>Reservation Dashboard</p>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
@@ -534,10 +566,10 @@
 <div id="ctx-menu">
   <button class="ctx-btn" id="ctx-edit-btn">✏️ 編輯訂位</button>
   <button class="ctx-btn" id="ctx-arrived-btn">✔ 已抵達</button>
-  <button class="ctx-btn" id="ctx-checkout-btn">🚪 已離開 (釋出空桌)</button>
+  <button class="ctx-btn" id="ctx-checkout-btn">🚪 已離開</button>
   <button class="ctx-btn danger" id="ctx-delete-btn">🗑 刪除訂位</button>
   <div id="ctx-confirm-bar" style="display:none">
-    <span style="font-size:.72rem;color:#c0392b;padding:4px 4px 4px 10px;letter-spacing:.04em">確定？</span>
+    <span style="font-size:.72rem;color:#c0392b;padding:4px 4px 4px 10px;letter-spacing:.04em">確定連同夥伴桌一起？</span>
     <button class="ctx-btn danger" id="ctx-confirm-yes" style="padding:6px 10px">刪除</button>
     <button class="ctx-btn" id="ctx-confirm-no"  style="padding:6px 10px">取消</button>
   </div>
@@ -581,8 +613,9 @@
       <input type="number" id="f-pax" min="1" max="30" placeholder="2" style="max-width:100px">
     </div>
     <div class="form-row">
-      <label>指派桌號</label>
-      <select id="f-table"></select>
+      <label>指派桌號 (可多選佔多桌)</label>
+      <div class="table-checkbox-grid" id="table-checkbox-container">
+        </div>
     </div>
     <div class="form-row">
       <label>備註事項</label>
@@ -600,15 +633,16 @@
 // FIREBASE CONFIG
 // ═══════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyCAlWYyeJOhvqpxJRXFQmNCrV-0CGYdEhE",
-  authDomain:        "cafe-reservation-f8228.firebaseapp.com",
-  projectId:         "cafe-reservation-f8228",
-  storageBucket:     "cafe-reservation-f8228.firebasestorage.app",
-  messagingSenderId: "811749907224",
-  appId:             "1:811749907224:web:480395a49f853bc4305c6d",
-  measurementId:     "G-4KC5LQ9560"
+  apiKey: "AIzaSyCAlWYyeJOhvqpxJRXFQmNCrV-0CGYdEhE",
+  authDomain: "cafe-reservation-f8228.firebaseapp.com",
+  projectId: "cafe-reservation-f8228",
+  storageBucket: "cafe-reservation-f8228.appspot.com",
+  messagingSenderId: "542387799589",
+  appId: "1:542387799589:web:9c97b2bc2ee9e4ba6f8efb"
 };
+// 修正：修正為已連結狀態
 const FB_ENABLED = true;
+
 let db = null;
 if (FB_ENABLED) {
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -624,7 +658,7 @@ const TABLES = [
   { id: 'ts',  label: '小包廂',         bg: '#ffc8d8', fg: '#8a1a40' },
   { id: 'tl',  label: '大包廂（圓桌）', bg: '#b5e0d8', fg: '#1a5a50' },
   { id: 'lb1', label: '大包廂(1)',      bg: '#c5dff8', fg: '#1a3a6a' },
-  { id: 'lb2', label: '大包廂(2)',      bg: '#d8f0c5', fg: '#2a5a1a' },
+  { id: 'lb2', label: '大board(2)',     bg: '#d8f0c5', fg: '#2a5a1a' },
   { id: 'lb3', label: '大包廂(3)',      bg: '#f8e4c5', fg: '#6a3a0a' },
   { id: 'lb4', label: '大包廂(4)',      bg: '#e8c5f8', fg: '#5a1a7a' },
 ];
@@ -636,8 +670,8 @@ const GRID_SLOTS = 16;
 
 let reservationsByDate = {};
 let currentDate        = todayStr();
-let editingId          = null;
-let ctxTargetId        = null;
+let editingId          = null; // 如果點編輯，這會是其中一筆的 id
+let ctxTargetId        = null; // 當前右鍵點擊的單一 id
 let pendingDeleteId    = null;
 let suffix             = '先生';
 
@@ -689,27 +723,30 @@ function minToTimeStr(min) {
   return `${String(Math.floor(min / 60)).padStart(2,'0')}:${String(min % 60).padStart(2,'0')}`;
 }
 
-function isConflict(tableId, startMin, endMin, excludeId = null) {
-  return getReservations().find(r => r.id !== excludeId && r.tableId === tableId && startMin < r.endMin && endMin > r.startMin) || null;
+// 判定單一桌子時間衝突
+function isConflict(tableId, startMin, endMin, excludeIds = []) {
+  if (!Array.isArray(excludeIds)) excludeIds = [excludeIds];
+  return getReservations().find(r => !excludeIds.includes(r.id) && r.tableId === tableId && startMin < r.endMin && endMin > r.startMin) || null;
 }
 
-function upsertReservation(data) {
-  const rs = getReservations();
-  if (data.id) {
-    const idx = rs.findIndex(r => r.id === data.id);
-    if (idx !== -1) rs[idx] = { ...rs[idx], ...data };
-  } else {
-    rs.push({ ...data, id: 'r' + Date.now() + Math.random().toString(36).slice(2,6) });
-  }
-  saveAll(); render();
-}
-
+// 聯動操作：刪除一組訂位
 function _doDelete() {
   const id = pendingDeleteId; pendingDeleteId = null;
   document.getElementById('ctx-confirm-bar').style.display = 'none';
   hideCtxMenu();
   if (!id) return;
-  reservationsByDate[currentDate] = getReservations().filter(r => r.id !== id);
+  
+  const rs = getReservations();
+  const target = rs.find(r => r.id === id);
+  if (!target) return;
+
+  // 如果有 groupId，就把同群組的一起刪除；沒有的話就刪單一筆
+  if (target.groupId) {
+    reservationsByDate[currentDate] = rs.filter(r => r.groupId !== target.groupId);
+  } else {
+    reservationsByDate[currentDate] = rs.filter(r => r.id !== id);
+  }
+  
   saveAll(); render();
 }
 
@@ -718,43 +755,51 @@ function _cancelDelete() {
   document.getElementById('ctx-confirm-bar').style.display = 'none';
 }
 
+// 聯動操作：切換抵達狀態
 function toggleArrived(id) {
   if (!id) return;
-  const r = getReservations().find(x => x.id === id); if (!r) return;
-  r.arrived = !r.arrived;
+  const rs = getReservations();
+  const target = rs.find(x => x.id === id); if (!target) return;
+  
+  const newState = !target.arrived;
+  
+  if (target.groupId) {
+    rs.forEach(x => { if (x.groupId === target.groupId) x.arrived = newState; });
+  } else {
+    target.arrived = newState;
+  }
   saveAll(); render();
 }
-  
+
+// 功能 1 實作：已離開功能 (聯動切斷時間)
 function checkoutReservation(id) {
   if (!id) return;
-  const r = getReservations().find(x => x.id === id); 
-  if (!r) return;
+  const rs = getReservations();
+  const target = rs.find(x => x.id === id); if (!target) return;
   
-  // 取得目前的系統時間（小時與分鐘）
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
   
-  // 防呆 1：如果客人在營業時間前就按離開，或是還沒到訂位開始時間就按離開
-  if (nowMin <= r.startMin) {
+  if (nowMin <= target.startMin) {
     alert("⚠️ 客人尚未到達或尚未到開始時間，無法執行離開釋出！\n如果是提早取消，請直接使用「刪除訂位」。");
     return;
   }
-  
-  // 防呆 2：如果目前時間早就超過原本的結束時間，就不需要切斷了
-  if (nowMin >= r.endMin) {
+  if (nowMin >= target.endMin) {
     alert("訂位時間本來就已經結束囉！");
     return;
   }
 
-  // 將結束時間校正為「現在時間」（以 5 分鐘為單位防呆，或者直接用精確分鐘）
   const roundedNowMin = Math.round(nowMin / 5) * 5;
-  r.endMin = Math.max(r.startMin + 5, roundedNowMin); // 確保至少有 5 分鐘寬度
+  const finalEndMin = Math.max(target.startMin + 5, roundedNowMin);
   
-  // 標記已離開（選用，也可以不加，純切斷時間）
-  r.checkout = true; 
+  // 如果是多桌群組，大家一起提早切斷
+  if (target.groupId) {
+    rs.forEach(x => { if (x.groupId === target.groupId) x.endMin = finalEndMin; });
+  } else {
+    target.endMin = finalEndMin;
+  }
   
-  saveAll(); 
-  render();
+  saveAll(); render();
 }
 
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
@@ -849,6 +894,9 @@ function renderBlock(r) {
   const block = document.createElement('div');
   block.className = 'res-block';
   block.id = 'rb-' + r.id;
+  if (r.groupId) {
+    block.setAttribute('data-group-id', r.groupId); // 綁定群組標籤
+  }
   block.style.left = `${leftPercent}%`;
   block.style.width = `${widthPercent}%`;
   block.style.top = `${topPx}px`;
@@ -857,8 +905,10 @@ function renderBlock(r) {
   block.style.color = table.fg;
   block.style.border = `1.5px solid ${table.fg}40`;
 
+  // 畫面文字呈現：如果是佔多桌，多顯示標記
+  const groupTag = r.groupId ? `<span style="font-size:10px;opacity:0.7;display:block;">[多桌聯動]</span>` : '';
   block.innerHTML = `
-    <div class="res-name">${r.name}${r.suffix}</div>
+    <div class="res-name">${r.name}${r.suffix} ${groupTag}</div>
     <div class="res-time">${minToTimeStr(r.startMin)}～${minToTimeStr(r.endMin)}</div>`;
 
   if (r.arrived) {
@@ -868,9 +918,25 @@ function renderBlock(r) {
     block.appendChild(icon);
   }
 
-  block.addEventListener('mouseenter', e => showTooltip(e, r));
+  // 方案A實作：滑鼠移入時，抓取所有相同 groupId 的方塊一起加外框發光！
+  block.addEventListener('mouseenter', e => {
+    showTooltip(e, r);
+    if (r.groupId) {
+      document.querySelectorAll(`.res-block[data-group-id="${r.groupId}"]`).forEach(b => {
+        b.classList.add('group-highlight');
+      });
+    }
+  });
   block.addEventListener('mousemove',  e => moveTooltip(e));
-  block.addEventListener('mouseleave', () => hideTooltip());
+  // 滑鼠移出時，熄滅發光
+  block.addEventListener('mouseleave', () => {
+    hideTooltip();
+    if (r.groupId) {
+      document.querySelectorAll(`.res-block[data-group-id="${r.groupId}"]`).forEach(b => {
+        b.classList.remove('group-highlight');
+      });
+    }
+  });
 
   block.addEventListener('contextmenu', e => {
     e.preventDefault(); e.stopPropagation();
@@ -888,7 +954,7 @@ function updateCtxArrivedLabel(arrived) {
 }
 
 // ═══════════════════════════════════════════════════
-// DRAG & DROP POINTER EVENTS
+// DRAG & DROP POINTER EVENTS (支持群組聯動拖曳)
 // ═══════════════════════════════════════════════════
 function makeDraggable(block, r) {
   block.addEventListener('pointerdown', e => {
@@ -957,14 +1023,31 @@ function makeDraggable(block, r) {
       newRowIdx = Math.max(0, Math.min(TABLES.length - 1, newRowIdx));
       const newTableId = TABLES[newRowIdx].id;
 
-      const conflict = isConflict(newTableId, clampedStart, clampedEnd, r.id);
+      // 如果此單是群組單中的一員，拖曳時只需檢查並修改自身這一個位置，但保持 groupId 不變
+      const rs = getReservations();
+      // 排除掉自身
+      const conflict = isConflict(newTableId, clampedStart, clampedEnd, [r.id]);
       if (conflict) {
         alert(`⚠️ 無法移動！\n${TABLES.find(t=>t.id===newTableId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 段已有「${conflict.name}${conflict.suffix}」的預約。`);
         render();
         return;
       }
 
-      upsertReservation({ ...r, startMin: clampedStart, endMin: clampedEnd, tableId: newTableId });
+      // 更新單筆資料
+      const idx = rs.findIndex(x => x.id === r.id);
+      if (idx !== -1) {
+        rs[idx] = { ...rs[idx], startMin: clampedStart, endMin: clampedEnd, tableId: newTableId };
+        // 同步通知同群組的其他夥伴桌也一起「同步時間」，但維持各自的桌號
+        if (r.groupId) {
+          rs.forEach(x => {
+            if (x.groupId === r.groupId) {
+              x.startMin = clampedStart;
+              x.endMin = clampedEnd;
+            }
+          });
+        }
+      }
+      saveAll(); render();
     };
 
     document.addEventListener('pointermove',   onMove, { passive: false });
@@ -978,7 +1061,20 @@ function makeDraggable(block, r) {
 // ═══════════════════════════════════════════════════
 const tip = document.getElementById('tooltip');
 function showTooltip(e, r) {
-  tip.innerHTML = `<strong>${r.name}${r.suffix}</strong>📞 電話：${r.phone || '無'}<br>👥 人數：${r.pax || '—'} 人<br>${r.note ? '📝 備註：' + r.note : ''}`;
+  // 多桌優化：如果是佔多桌，提示內容把夥伴桌一起撈出來顯示
+  let tablesLabel = '';
+  if (r.groupId) {
+    const partnerTables = getReservations().filter(x => x.groupId === r.groupId).map(x => {
+      const tObj = TABLES.find(tb => tb.id === x.tableId);
+      return tObj ? tObj.label : '';
+    });
+    tablesLabel = partnerTables.join(' + ');
+  } else {
+    const tObj = TABLES.find(tb => tb.id === r.tableId);
+    tablesLabel = tObj ? tObj.label : '未定';
+  }
+
+  tip.innerHTML = `<strong>${r.name}${r.suffix}</strong>📞 電話：${r.phone || '無'}<br>👥 人數：${r.pax || '—'} 人<br>📍 桌號：${tablesLabel}<br>${r.note ? '📝 備註：' + r.note : ''}`;
   tip.classList.add('show'); moveTooltip(e);
 }
 function moveTooltip(e) { tip.style.left = (e.clientX + 16) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; }
@@ -996,56 +1092,29 @@ function showCtxMenu(x, y) {
   menu.style.left = Math.max(10, safeX) + 'px'; menu.style.top = safeY + 'px';
 }
 function hideCtxMenu() { document.getElementById('ctx-menu').classList.remove('show'); _cancelDelete(); }
-document.getElementById('ctx-edit-btn').addEventListener('click', e => { 
-  e.stopPropagation(); 
-  hideCtxMenu(); 
-  openModal(ctxTargetId); 
-});
 
-document.getElementById('ctx-arrived-btn').addEventListener('click', e => { 
-  e.stopPropagation(); 
-  hideCtxMenu(); 
-  toggleArrived(ctxTargetId); 
-});
-
-// 點擊「刪除訂位」時，顯示確認欄，並阻止事件外傳（不讓選單關閉）
-document.getElementById('ctx-delete-btn').addEventListener('click', e => { 
-  e.stopPropagation(); 
-  pendingDeleteId = ctxTargetId; 
-  document.getElementById('ctx-confirm-bar').style.display = 'flex'; 
-});
-
-// 點擊「確定刪除」
-document.getElementById('ctx-confirm-yes').addEventListener('click', e => { 
-  e.stopPropagation(); 
-  _doDelete(); 
-});
-
-// 點擊「取消刪除」
-document.getElementById('ctx-confirm-no').addEventListener('click', e => { 
-  e.stopPropagation(); 
-  _cancelDelete(); 
-});
-
-// 點擊選單本體時，也阻止冒泡，確保在選單內點任何地方都不會誤關選單
-document.getElementById('ctx-menu').addEventListener('click', e => {
-  e.stopPropagation();
-});
-
-document.getElementById('ctx-checkout-btn').addEventListener('click', e => { 
-  e.stopPropagation(); 
-  hideCtxMenu(); 
-  checkoutReservation(ctxTargetId); 
-});
-
-// 只有點擊選單以外的空白地方，才會關閉選單
+// 修正：修正右鍵選單點擊 Bug，改為 click 並防止冒泡
+document.getElementById('ctx-edit-btn').addEventListener('click', e => { e.stopPropagation(); hideCtxMenu(); openModal(ctxTargetId); });
+document.getElementById('ctx-arrived-btn').addEventListener('click', e => { e.stopPropagation(); hideCtxMenu(); toggleArrived(ctxTargetId); });
+document.getElementById('ctx-checkout-btn').addEventListener('click', e => { e.stopPropagation(); hideCtxMenu(); checkoutReservation(ctxTargetId); });
+document.getElementById('ctx-delete-btn').addEventListener('click', e => { e.stopPropagation(); pendingDeleteId = ctxTargetId; document.getElementById('ctx-confirm-bar').style.display = 'flex'; });
+document.getElementById('ctx-confirm-yes').addEventListener('click', e => { e.stopPropagation(); _doDelete(); });
+document.getElementById('ctx-confirm-no').addEventListener('click', e => { e.stopPropagation(); _cancelDelete(); });
+document.getElementById('ctx-menu').addEventListener('click', e => { e.stopPropagation(); });
 document.addEventListener('click', () => hideCtxMenu());
 
 // ═══════════════════════════════════════════════════
 // MODAL MANAGEMENT
 // ═══════════════════════════════════════════════════
-function buildTableSelect() {
-  document.getElementById('f-table').innerHTML = TABLES.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
+// 方案A實作：將原本的 Select 改成動態多選 Checkbox
+function buildTableCheckboxes() {
+  const container = document.getElementById('table-checkbox-container');
+  container.innerHTML = TABLES.map(t => `
+    <label class="table-cb-label">
+      <input type="checkbox" name="f-tables" value="${t.id}" id="cb-${t.id}">
+      <span>${t.label}</span>
+    </label>
+  `).join('');
 }
 
 function buildTimeSelects() {
@@ -1084,15 +1153,31 @@ function openModal(id = null) {
   editingId = id;
   document.getElementById('modal-title').textContent = id ? '✏️ 編輯現有訂位' : '☕ 新增咖啡廳訂位';
 
+  // 先清空所有勾選
+  document.querySelectorAll('input[name="f-tables"]').forEach(cb => cb.checked = false);
+
   if (id) {
-    const r = getReservations().find(x => x.id === id); if (!r) return;
+    const rs = getReservations();
+    const r = rs.find(x => x.id === id); if (!r) return;
     document.getElementById('f-name').value  = r.name;
     document.getElementById('f-phone').value = r.phone;
     document.getElementById('f-pax').value   = r.pax;
     document.getElementById('f-note').value  = r.note;
     setFormStartMin(r.startMin); setFormEndMin(r.endMin);
-    document.getElementById('f-table').value = r.tableId;
     setSuffix(r.suffix);
+
+    // 回填桌號：如果是有群組的，就把全群組選取的桌子都勾起來
+    if (r.groupId) {
+      rs.forEach(x => {
+        if (x.groupId === r.groupId) {
+          const cb = document.getElementById(`cb-${x.tableId}`);
+          if (cb) cb.checked = true;
+        }
+      });
+    } else {
+      const cb = document.getElementById(`cb-${r.tableId}`);
+      if (cb) cb.checked = true;
+    }
   } else {
     document.getElementById('f-name').value  = '';
     document.getElementById('f-phone').value = '';
@@ -1102,8 +1187,12 @@ function openModal(id = null) {
     const curMin = Math.round((n.getHours() * 60 + n.getMinutes()) / 5) * 5;
     const defStart = Math.max(DAY_START, Math.min(DAY_END - 120, curMin));
     setFormStartMin(defStart); setFormEndMin(Math.min(DAY_END, defStart + 120));
-    document.getElementById('f-table').value = TABLES[0].id;
     setSuffix('先生');
+    // 預設選取第一個 Checkbox
+    if (TABLES.length > 0) {
+      const cb = document.getElementById(`cb-${TABLES[0].id}`);
+      if (cb) cb.checked = true;
+    }
   }
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -1117,110 +1206,4 @@ function setSuffix(s) {
   document.getElementById('btn-ms').classList.toggle('active', s === '小姐');
 }
 
-function saveReservation() {
-  const name = document.getElementById('f-name').value.trim();
-  const phone = document.getElementById('f-phone').value.trim();
-  const pax = document.getElementById('f-pax').value;
-  const note = document.getElementById('f-note').value.trim();
-  const tableId = document.getElementById('f-table').value;
-
-  if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
-  
-  // ═══════════════════════════════════════════════════
-  // 手機號碼防呆檢查
-  // ═══════════════════════════════════════════════════
-  // 先移除非數字的字元（例如：使用者輸入的破折號 - 或空格），只保留純數字
-  const purePhone = phone.replace(/\D/g, '');
-  if (!purePhone) {
-    alert('請填寫聯絡電話！');
-    return;
-  }
-  if (purePhone.length !== 10) {
-    alert(`⚠️ 電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`);
-    return;
-  }
-  if (!purePhone.startsWith('09')) {
-    alert('⚠️ 電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。');
-    return;
-  }
-  // ═══════════════════════════════════════════════════
-
-  const startMin = getFormStartMin();
-  const endMin   = getFormEndMin();
-
-  if (endMin <= startMin) { alert('結束時間不能早於或等於開始時間！'); return; }
-  if (startMin < DAY_START || endMin > DAY_END) { alert(`本店營業時間為 10:00 ～ 18:00`); return; }
-
-  const conflict = isConflict(tableId, startMin, endMin, editingId);
-  if (conflict) {
-    alert(`⚠️ 時間發生衝突！\n${TABLES.find(t => t.id === tableId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有「${conflict.name}${conflict.suffix}」的訂位。`);
-    return;
-  }
-
-  upsertReservation({ id: editingId, name, suffix, phone, pax, note, tableId, startMin, endMin });
-  closeModal();
-}
-
-// ═══════════════════════════════════════════════════
-// 管理者密碼驗證設定
-// ═══════════════════════════════════════════════════
-const ADMIN_PASSWORD = "cafe1234"; // 👈 可在此修改密碼
-
-function checkPassword() {
-  const inputPass = document.getElementById('auth-password').value;
-  const errorEl = document.getElementById('auth-error');
-  const overlayEl = document.getElementById('auth-overlay');
-  const appEl = document.getElementById('main-app');
-  
-  if (inputPass === ADMIN_PASSWORD) {
-    sessionStorage.setItem('is_cafe_admin', 'true');
-    appEl.style.display = 'block';
-    overlayEl.style.opacity = '0';
-    setTimeout(() => {
-      overlayEl.style.display = 'none';
-      if (typeof render === 'function') render(); 
-    }, 300);
-  } else {
-    errorEl.style.display = 'block';
-    document.getElementById('auth-password').value = '';
-    document.getElementById('auth-password').focus();
-  }
-}
-
-// ═══════════════════════════════════════════════════
-// INITIALIZATION
-// ═══════════════════════════════════════════════════
-buildGantt();
-buildLegend();
-buildTableSelect();
-buildTimeSelects();
-
-window.addEventListener('resize', render);
-
-(async () => {
-  // 檢查是否在此標籤頁已成功登入
-  if (sessionStorage.getItem('is_cafe_admin') === 'true') {
-    document.getElementById('auth-overlay').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-  }
-
-  if (!FB_ENABLED) document.getElementById('fb-banner').style.display = 'block';
-  await loadAll();
-  
-  if (Object.keys(reservationsByDate).length === 0) {
-    const td = todayStr();
-    reservationsByDate[td] = [
-      { id:'s1', name:'陳', suffix:'小姐', phone:'0912-111-222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60, endMin:13*60 },
-      { id:'s6', name:'吳', suffix:'先生', phone:'0955-111-333', pax:'3', note:'下午茶', tableId:'t1', startMin:15*60, endMin:17*60 },
-      { id:'s2', name:'林', suffix:'先生', phone:'0933-222-333', pax:'4', note:'生日驚喜', tableId:'t3', startMin:12*60, endMin:14*60 },
-      { id:'s7', name:'蔡', suffix:'小姐', phone:'0911-222-444', pax:'2', note:'', tableId:'t3', startMin:16*60, endMin:18*60 },
-      { id:'s3', name:'王', suffix:'先生', phone:'0977-333-444', pax:'6', note:'', tableId:'tl', startMin:13*60, endMin:16*60 },
-      { id:'s4', name:'張', suffix:'小姐', phone:'0922-444-555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60, endMin:12*60 },
-      { id:'s5', name:'李', suffix:'先生', phone:'0988-555-666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 }
-    ];
-  }
-  switchDate(todayStr());
-})();
-</script>
-</body>
-</html>
+// 方案A實作：儲存
