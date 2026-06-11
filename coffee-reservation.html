@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>咖啡廳訂位管理</title>
+<title>咖啡廳訂位管理系統</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
@@ -20,23 +20,6 @@
     --border: rgba(180,150,110,0.25);
     --shadow: 0 4px 20px rgba(100,70,40,0.10);
     --radius: 10px;
-
-    /* Macaron palette per table */
-    --t1: #f5c6c6;   /* 玫瑰粉 */
-    --t2: #fde2b5;   /* 蜜桃橙 */
-    --t3: #c8e6c9;   /* 薄荷綠 */
-    --t5: #b3d9f7;   /* 天空藍 */
-    --t6: #d4c5f0;   /* 薰衣草 */
-    --ts: #ffc8d8;   /* 小包廂粉 */
-    --tl: #b5e0d8;   /* 大包廂青 */
-
-    --t1d: #c27070;
-    --t2d: #c07820;
-    --t3d: #4a8a50;
-    --t5d: #2a6ea0;
-    --t6d: #6a4aaa;
-    --tsd: #c04070;
-    --tld: #2a8a7a;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,7 +42,6 @@
     .brand p  { display: none; }
     .btn-add  { padding: 10px 16px; font-size: .78rem; }
     .date-nav input[type=date] { width: 108px; font-size: .76rem; }
-    .res-block { min-height: 40px !important; }
   }
 
   /* ── Header ───────────────────────────────────────── */
@@ -84,12 +66,6 @@
     letter-spacing: .18em;
     text-transform: uppercase;
     margin-top: 4px;
-  }
-
-  #today-label {
-    font-size: .8rem;
-    color: var(--text-light);
-    letter-spacing: .1em;
   }
 
   .btn-add {
@@ -124,7 +100,6 @@
     letter-spacing: .05em; outline: none; cursor: pointer;
     padding: 0 4px; width: 130px;
   }
-  .date-nav input[type=date]::-webkit-calendar-picker-indicator { opacity:.5; cursor:pointer; }
   .date-nav-btn {
     background: none; border: none; color: var(--latte);
     font-size: 1.15rem; cursor: pointer; padding: 0 4px;
@@ -151,7 +126,7 @@
     -webkit-overflow-scrolling: touch;
     padding: 28px 28px 32px;
     border: 1px solid var(--border);
-    touch-action: pan-x;
+    position: relative;
   }
   @media (max-width: 600px) {
     .gantt-wrap { padding: 16px 10px 20px; border-radius: 12px; }
@@ -160,13 +135,12 @@
   /* ── Gantt Grid ───────────────────────────────────── */
   .gantt {
     display: grid;
-    grid-template-columns: 100px repeat(16, 1fr); /* 16 half-hour slots */
+    grid-template-columns: 100px repeat(16, minmax(45px, 1fr)); /* 16 half-hour slots */
     min-width: 820px;
     position: relative;
   }
 
-  /* header row */
-  .gh-corner { grid-column: 1; }
+  .gh-corner { grid-column: 1; grid-row: 1; }
   .gh-time {
     text-align: center;
     font-size: .68rem;
@@ -175,6 +149,7 @@
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
     user-select: none;
+    grid-row: 1;
   }
   .gh-time.hour-mark {
     font-size: .72rem;
@@ -182,12 +157,9 @@
     font-weight: 500;
   }
 
-  /* rows */
-  .grow {
-    display: contents;
-  }
-
+  /* Rows */
   .grow-label {
+    grid-column: 1;
     display: flex;
     align-items: center;
     font-size: .75rem;
@@ -198,22 +170,33 @@
     border-bottom: 1px solid var(--border);
     user-select: none;
     white-space: nowrap;
+    background: var(--cream);
+    position: sticky;
+    left: 0;
+    z-index: 5;
   }
 
   .gcell {
     height: 56px;
     border-bottom: 1px solid var(--border);
     border-left: 1px solid transparent;
-    position: relative;
     transition: background .15s;
   }
   .gcell.hour-start { border-left: 1px solid var(--border); }
   .gcell:hover { background: rgba(210,185,150,.12); }
 
+  /* ── 修正後的訂位畫布容器（關鍵修正：防縮放錯位） ── */
+  .res-container {
+    grid-column: 2 / span 16;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 讓容器不干擾底層網格點擊 */
+  }
+
   /* ── Reservation Blocks ───────────────────────────── */
   .res-block {
     position: absolute;
-    top: 6px;
     height: 44px;
     border-radius: 8px;
     padding: 0 10px;
@@ -227,7 +210,7 @@
     box-shadow: 0 2px 10px rgba(0,0,0,.12);
     transition: transform .15s, box-shadow .15s, opacity .15s;
     overflow: hidden;
-    min-width: 40px;
+    pointer-events: auto; /* 開啟事件阻擋 */
     touch-action: none;
   }
   .res-block:hover {
@@ -238,9 +221,8 @@
   .res-block.dragging {
     opacity: .85;
     cursor: grabbing;
-    transform: scale(1.03);
-    box-shadow: 0 10px 30px rgba(0,0,0,.22);
     z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,.22);
   }
 
   .res-name {
@@ -257,7 +239,6 @@
     white-space: nowrap;
   }
 
-  /* 已抵達 icon */
   .arrived-icon {
     position: absolute;
     right: 8px;
@@ -269,9 +250,8 @@
     line-height: 1;
     pointer-events: none;
   }
-  /* 已抵達的色塊加左側邊框強調 */
   .res-block.arrived {
-    border-left-width: 4px !important;
+    border-left-width: 5px !important;
   }
 
   /* ── Tooltip ──────────────────────────────────────── */
@@ -307,13 +287,8 @@
     gap: 4px;
     flex-direction: column;
     min-width: 140px;
-    max-width: 200px;
   }
   #ctx-menu.show { display: flex; }
-  @media (max-width: 600px) {
-    #ctx-menu { min-width: 160px; }
-    .ctx-btn  { padding: 12px 16px; font-size: .85rem; }
-  }
   #ctx-confirm-bar {
     display: flex;
     align-items: center;
@@ -403,98 +378,36 @@
     box-shadow: 0 0 0 3px rgba(180,140,90,.15);
   }
 
-  .suffix-group {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex: 1;
-  }
+  .suffix-group { display: flex; gap: 8px; align-items: center; flex: 1; }
   .suffix-group input { flex: 1; }
-
   .suffix-btn {
-    padding: 10px 14px;
-    border-radius: 9px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    font-family: 'Noto Serif TC', serif;
-    font-size: .78rem;
-    color: var(--text-light);
-    cursor: pointer;
-    transition: all .15s;
-    white-space: nowrap;
+    padding: 10px 14px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--bg); font-family: 'Noto Serif TC', serif; font-size: .78rem;
+    color: var(--text-light); cursor: pointer; transition: all .15s; white-space: nowrap;
   }
   .suffix-btn.active, .suffix-btn:hover { background: var(--espresso); color: var(--cream); border-color: var(--espresso); }
 
   .time-row { display: flex; align-items: center; gap: 6px; }
   .time-sep { color: var(--text-light); font-size: .9rem; padding: 0 2px; }
-  .time-row select {
-    width: auto;
-    padding: 10px 8px;
-    text-align: center;
-    cursor: pointer;
-  }
-  /* 小時 select 略寬，分鐘略窄 */
-  #f-start-h, #f-end-h { min-width: 62px; }
-  #f-start-m, #f-end-m { min-width: 62px; }
+  .time-row select { width: auto; padding: 10px 8px; text-align: center; cursor: pointer; }
+  #f-start-h, #f-end-h, #f-start-m, #f-end-m { min-width: 65px; }
 
   textarea { resize: vertical; min-height: 72px; }
 
-  .modal-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 28px;
-    gap: 10px;
-  }
+  .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; gap: 10px; }
   .btn-save {
-    background: var(--espresso);
-    color: var(--cream);
-    border: none;
-    border-radius: 50px;
-    padding: 11px 30px;
-    font-family: 'Noto Serif TC', serif;
-    font-size: .82rem;
-    letter-spacing: .1em;
-    cursor: pointer;
-    transition: all .2s;
-    box-shadow: 0 3px 12px rgba(100,60,20,.22);
+    background: var(--espresso); color: var(--cream); border: none; border-radius: 50px;
+    padding: 11px 30px; font-family: 'Noto Serif TC', serif; font-size: .82rem;
+    letter-spacing: .1em; cursor: pointer; transition: all .2s; box-shadow: 0 3px 12px rgba(100,60,20,.22);
   }
   .btn-save:hover { background: #5a3a1a; transform: translateY(-1px); }
-
-  .btn-cancel {
-    background: none;
-    border: none;
-    color: var(--text-light);
-    font-family: 'Noto Serif TC', serif;
-    font-size: .78rem;
-    cursor: pointer;
-    letter-spacing: .06em;
-    transition: color .15s;
-  }
+  .btn-cancel { background: none; border: none; color: var(--text-light); font-family: 'Noto Serif TC', serif; font-size: .78rem; cursor: pointer; letter-spacing: .06em; transition: color .15s; }
   .btn-cancel:hover { color: var(--text); }
 
-  /* ── Legend ───────────────────────────────────────── */
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .leg-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: .7rem;
-    color: var(--text-light);
-    letter-spacing: .06em;
-  }
-  .leg-dot {
-    width: 12px; height: 12px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .leg-item { display: flex; align-items: center; gap: 7px; font-size: .7rem; color: var(--text-light); letter-spacing: .06em; }
+  .leg-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
 
-  /* scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--latte); border-radius: 10px; }
@@ -502,17 +415,15 @@
 </head>
 <body>
 
-<div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b;
-  border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem;
-  color:#78350f;letter-spacing:.04em;line-height:1.7">
+<div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
   ☁️ <strong>Firebase 未設定</strong>，目前使用 localStorage（僅此裝置可見）。<br>
   如需跨裝置同步，請在程式碼頂端填入你的 Firebase 設定。
-  <button onclick="this.parentElement.style.display='none'"
-    style="float:right;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;margin-left:10px">✕</button>
+  <button onclick="this.parentElement.style.display='none'" style="float:right;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;margin-left:10px">✕</button>
 </div>
+
 <header>
   <div class="brand">
-    <h1>☕ 咖啡廳訂位</h1>
+    <h1>☕ 咖啡廳訂位系統</h1>
     <p>Reservation Dashboard</p>
   </div>
   <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
@@ -527,32 +438,36 @@
 </header>
 
 <div class="legend" id="legend"></div>
-
 <div id="gantt-date-label"></div>
-<div class="gantt-wrap">
-  <div class="gantt" id="gantt"></div>
-</div>
 
-<div id="tooltip"></div>
-<div id="ctx-menu">
-  <button class="ctx-btn" id="ctx-edit-btn">✏️ 編輯</button>
-  <button class="ctx-btn" id="ctx-arrived-btn">✔ 已抵達</button>
-  <button class="ctx-btn danger" id="ctx-delete-btn">🗑 刪除</button>
-  <div id="ctx-confirm-bar" style="display:none">
-    <span style="font-size:.72rem;color:#c0392b;padding:4px 8px 4px 14px;letter-spacing:.04em">確定刪除？</span>
-    <button class="ctx-btn danger" id="ctx-confirm-yes" style="padding:6px 12px">確定</button>
-    <button class="ctx-btn" id="ctx-confirm-no"  style="padding:6px 12px">取消</button>
+<div class="gantt-wrap">
+  <div class="gantt" id="gantt">
+    <!-- Grid elements generated by JavaScript -->
   </div>
 </div>
 
-<!-- Modal -->
+<div id="tooltip"></div>
+
+<!-- Context Menu -->
+<div id="ctx-menu">
+  <button class="ctx-btn" id="ctx-edit-btn">✏️ 編輯訂位</button>
+  <button class="ctx-btn" id="ctx-arrived-btn">✔ 已抵達</button>
+  <button class="ctx-btn danger" id="ctx-delete-btn">🗑 刪除訂位</button>
+  <div id="ctx-confirm-bar" style="display:none">
+    <span style="font-size:.72rem;color:#c0392b;padding:4px 4px 4px 10px;letter-spacing:.04em">確定？</span>
+    <button class="ctx-btn danger" id="ctx-confirm-yes" style="padding:6px 10px">刪除</button>
+    <button class="ctx-btn" id="ctx-confirm-no"  style="padding:6px 10px">取消</button>
+  </div>
+</div>
+
+<!-- Modal 表單 -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
   <div class="modal">
     <h2 id="modal-title">新增訂位</h2>
     <div class="form-row">
-      <label>訂位人</label>
+      <label>訂位人姓名</label>
       <div class="input-row">
-        <input type="text" id="f-name" placeholder="姓氏" style="max-width:110px">
+        <input type="text" id="f-name" placeholder="請輸入姓氏" style="max-width:140px">
         <div class="suffix-group">
           <button class="suffix-btn active" id="btn-mr" onclick="setSuffix('先生')">先生</button>
           <button class="suffix-btn" id="btn-ms" onclick="setSuffix('小姐')">小姐</button>
@@ -576,20 +491,20 @@
       </div>
     </div>
     <div class="form-row">
-      <label>電話</label>
-      <input type="tel" id="f-phone" placeholder="0912-345-678">
+      <label>聯絡電話</label>
+      <input type="tel" id="f-phone" placeholder="例如：0912345678">
     </div>
     <div class="form-row">
       <label>人數</label>
-      <input type="number" id="f-pax" min="1" max="30" placeholder="2" style="max-width:90px">
+      <input type="number" id="f-pax" min="1" max="30" placeholder="2" style="max-width:100px">
     </div>
     <div class="form-row">
-      <label>桌號</label>
+      <label>指派桌號</label>
       <select id="f-table"></select>
     </div>
     <div class="form-row">
-      <label>備註</label>
-      <textarea id="f-note" placeholder="特殊需求、活動說明…"></textarea>
+      <label>備註事項</label>
+      <textarea id="f-note" placeholder="特殊需求、慶生、兒童椅等..."></textarea>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -601,8 +516,6 @@
 <script>
 // ═══════════════════════════════════════════════════
 // FIREBASE CONFIG
-// ⚠️  請到 Firebase Console → 專案設定 → 你的應用程式
-//     複製 firebaseConfig 的值貼到下方
 // ═══════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
   apiKey:            "YOUR_API_KEY",
@@ -619,9 +532,6 @@ if (FB_ENABLED) {
   db = firebase.firestore();
 }
 
-// ═══════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════
 const TABLES = [
   { id: 't1',  label: '1號桌',          bg: '#f5c6c6', fg: '#7a3030' },
   { id: 't2',  label: '2號桌',          bg: '#fde2b5', fg: '#7a4010' },
@@ -636,22 +546,11 @@ const TABLES = [
   { id: 'lb4', label: '大包廂(4)',      bg: '#e8c5f8', fg: '#5a1a7a' },
 ];
 
-// ── 時間系統：全部改為「分鐘」，不再使用 slot ──────────
-// 營業時間：10:00 ~ 18:00
-const DAY_START = 10 * 60;  // 600 分鐘
-const DAY_END   = 18 * 60;  // 1080 分鐘
-const DAY_MINS  = DAY_END - DAY_START; // 480 分鐘
+const DAY_START = 10 * 60;  // 10:00
+const DAY_END   = 18 * 60;  // 18:00
+const DAY_MINS  = DAY_END - DAY_START;
+const GRID_SLOTS = 16; 
 
-// 甘特圖格線（視覺用，每30分鐘一條）：不影響時間邏輯
-const GRID_SLOTS = 16;  // 16 個半小時格
-const LABEL_W    = 100; // 左側桌號欄寬（px），對應 CSS grid 第一欄
-
-// ── Debug 開關 ──────────────────────────────────────
-const DEBUG = false;
-const dbg = (...a) => DEBUG && dbg(...a);
-
-// ── 全域狀態 ────────────────────────────────────────
-// 每筆訂位格式：{ id, name, suffix, phone, pax, note, tableId, startMin, endMin }
 let reservationsByDate = {};
 let currentDate        = todayStr();
 let editingId          = null;
@@ -661,15 +560,12 @@ let suffix             = '先生';
 
 function todayStr() {
   const d = new Date();
-  return d.getFullYear() + '-' +
-    String(d.getMonth()+1).padStart(2,'0') + '-' +
-    String(d.getDate()).padStart(2,'0');
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function getReservations() {
   if (!reservationsByDate[currentDate]) reservationsByDate[currentDate] = [];
   return reservationsByDate[currentDate];
 }
-// ── localStorage 快取 ────────────────────────────────
 function saveLocal() {
   try { localStorage.setItem('rbd_v1', JSON.stringify(reservationsByDate)); } catch(e) {}
 }
@@ -680,13 +576,9 @@ function loadLocal() {
   } catch(e) { reservationsByDate = {}; }
 }
 
-// ── Firebase（collection: reservations / doc: YYYY-MM-DD）──
 async function saveDateToFirebase(dateStr) {
   if (!FB_ENABLED || !db) return;
-  try {
-    await db.collection('reservations').doc(dateStr)
-            .set({ list: reservationsByDate[dateStr] || [] });
-  } catch(e) { dbg('FB save error:', e.message); }
+  try { await db.collection('reservations').doc(dateStr).set({ list: reservationsByDate[dateStr] || [] }); } catch(e) {}
 }
 async function loadDateFromFirebase(dateStr) {
   if (!FB_ENABLED || !db) return false;
@@ -694,63 +586,30 @@ async function loadDateFromFirebase(dateStr) {
     const doc = await db.collection('reservations').doc(dateStr).get();
     if (doc.exists) {
       reservationsByDate[dateStr] = doc.data().list || [];
-      saveLocal();
-      return true;
+      saveLocal(); return true;
     }
     return false;
-  } catch(e) { dbg('FB load error:', e.message); return false; }
+  } catch(e) { return false; }
 }
 
-// ── 統一介面（對外呼叫）────────────────────────────────
-function saveAll() {
-  saveLocal();
-  saveDateToFirebase(currentDate);
-}
+function saveAll() { saveLocal(); saveDateToFirebase(currentDate); }
 async function loadAll() {
   loadLocal();
-  if (FB_ENABLED) {
-    const ok = await loadDateFromFirebase(currentDate);
-    if (ok) render();
-  }
+  if (FB_ENABLED) { const ok = await loadDateFromFirebase(currentDate); if (ok) render(); }
 }
 
-// ═══════════════════════════════════════════════════
-// 時間工具函式
-// ═══════════════════════════════════════════════════
-
-// "HH:MM" → 分鐘數（從 00:00 起算）
-// 支援任意時間（10:10, 14:37 都可以）
 function timeStrToMin(str) {
-  const m = str.trim().match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  const h = parseInt(m[1]), min = parseInt(m[2]);
-  if (h < 0 || h > 23 || min < 0 || min > 59) return null;
-  return h * 60 + min;
+  const m = str.trim().match(/^(\d{1,2}):(\d{2})$/); if (!m) return null;
+  return parseInt(m[1]) * 60 + parseInt(m[2]);
 }
-
-// 分鐘數 → "HH:MM"
 function minToTimeStr(min) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  return `${String(Math.floor(min / 60)).padStart(2,'0')}:${String(min % 60).padStart(2,'0')}`;
 }
 
-// ═══════════════════════════════════════════════════
-// 衝突判斷（唯一定義，全系統共用）
-// ═══════════════════════════════════════════════════
 function isConflict(tableId, startMin, endMin, excludeId = null) {
-  return getReservations().find(r =>
-    r.id      !== excludeId &&
-    r.tableId === tableId   &&
-    startMin  < r.endMin    &&
-    endMin    > r.startMin
-  ) || null;
+  return getReservations().find(r => r.id !== excludeId && r.tableId === tableId && startMin < r.endMin && endMin > r.startMin) || null;
 }
 
-// ═══════════════════════════════════════════════════
-// 唯一寫入入口：createOrUpdateReservation
-// 新增 → id 為 null；更新 → 傳入現有 id
-// ═══════════════════════════════════════════════════
 function upsertReservation(data) {
   const rs = getReservations();
   if (data.id) {
@@ -759,29 +618,16 @@ function upsertReservation(data) {
   } else {
     rs.push({ ...data, id: 'r' + Date.now() + Math.random().toString(36).slice(2,6) });
   }
-  saveAll();
-  render();
-}
-
-// ═══════════════════════════════════════════════════
-// 刪除（唯一定義）
-// ═══════════════════════════════════════════════════
-function deleteReservation(id) {
-  if (!id) return;
-  pendingDeleteId = id;
-  document.getElementById('ctx-confirm-bar').style.display = 'flex';
-  document.getElementById('ctx-menu').scrollTop = 999;
+  saveAll(); render();
 }
 
 function _doDelete() {
-  const id = pendingDeleteId;
-  pendingDeleteId = null;
+  const id = pendingDeleteId; pendingDeleteId = null;
   document.getElementById('ctx-confirm-bar').style.display = 'none';
   hideCtxMenu();
   if (!id) return;
   reservationsByDate[currentDate] = getReservations().filter(r => r.id !== id);
-  saveAll();
-  render();
+  saveAll(); render();
 }
 
 function _cancelDelete() {
@@ -789,300 +635,224 @@ function _cancelDelete() {
   document.getElementById('ctx-confirm-bar').style.display = 'none';
 }
 
-// ═══════════════════════════════════════════════════
-// 已抵達切換
-// ═══════════════════════════════════════════════════
 function toggleArrived(id) {
   if (!id) return;
-  const r = getReservations().find(x => x.id === id);
-  if (!r) return;
+  const r = getReservations().find(x => x.id === id); if (!r) return;
   r.arrived = !r.arrived;
-  saveAll();
-  render();
+  saveAll(); render();
 }
 
-// ═══════════════════════════════════════════════════
-// DATE NAVIGATION
-// ═══════════════════════════════════════════════════
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
-
 function updateDateUI() {
-  const picker = document.getElementById('date-picker');
-  if (picker) picker.value = currentDate;
-  const d   = new Date(currentDate + 'T00:00:00');
+  const picker = document.getElementById('date-picker'); if (picker) picker.value = currentDate;
+  const d = new Date(currentDate + 'T00:00:00');
   const lbl = document.getElementById('gantt-date-label');
   const isToday = currentDate === todayStr();
   if (lbl) {
-    lbl.textContent = d.getFullYear() + ' / ' + (d.getMonth()+1) + ' / ' + d.getDate() +
-                      ' （週' + WEEKDAYS[d.getDay()] + '）' + (isToday ? '  ✦ 今天' : '');
+    lbl.textContent = d.getFullYear() + ' / ' + (d.getMonth()+1) + ' / ' + d.getDate() + ' （週' + WEEKDAYS[d.getDay()] + '）' + (isToday ? '  ✦ 今天' : '');
     lbl.className = isToday ? 'is-today' : '';
   }
 }
 
 async function switchDate(dateStr) {
-  if (!dateStr) return;
-  currentDate = dateStr;
+  if (!dateStr) return; currentDate = dateStr;
   if (!reservationsByDate[currentDate]) reservationsByDate[currentDate] = [];
-  updateDateUI();
-  render();
-  if (FB_ENABLED) {
-    const ok = await loadDateFromFirebase(currentDate);
-    if (ok) render();
-  }
+  updateDateUI(); render();
+  if (FB_ENABLED) { const ok = await loadDateFromFirebase(currentDate); if (ok) render(); }
 }
 
 function shiftDate(delta) {
-  const d = new Date(currentDate + 'T00:00:00');
-  d.setDate(d.getDate() + delta);
-  switchDate(d.getFullYear() + '-' +
-    String(d.getMonth()+1).padStart(2,'0') + '-' +
-    String(d.getDate()).padStart(2,'0'));
+  const d = new Date(currentDate + 'T00:00:00'); d.setDate(d.getDate() + delta);
+  switchDate(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
 }
 
 // ═══════════════════════════════════════════════════
-// BUILD GANTT（視覺格線，純 DOM，不影響時間邏輯）
+// BUILD GANTT GRID
 // ═══════════════════════════════════════════════════
 function buildGantt() {
-  const g = document.getElementById('gantt');
-  g.innerHTML = '';
+  const g = document.getElementById('gantt'); g.innerHTML = '';
+  const corner = document.createElement('div'); corner.className = 'gh-corner'; g.appendChild(corner);
 
-  // 角落
-  const corner = document.createElement('div');
-  corner.className = 'gh-corner';
-  g.appendChild(corner);
-
-  // 時間標頭（每30分鐘一格）
   for (let s = 0; s < GRID_SLOTS; s++) {
-    const totalMins = s * 30;
-    const h = 10 + Math.floor(totalMins / 60);
-    const m = totalMins % 60;
+    const totalMins = s * 30; const h = 10 + Math.floor(totalMins / 60); const m = totalMins % 60;
     const div = document.createElement('div');
     div.className = 'gh-time' + (m === 0 ? ' hour-mark' : '');
     div.textContent = m === 0 ? `${h}:00` : '';
+    div.style.gridColumn = s + 2;
     g.appendChild(div);
   }
 
-  // 桌號列
-  TABLES.forEach(t => {
+  TABLES.forEach((t, rIdx) => {
     const label = document.createElement('div');
-    label.className = 'grow-label';
-    label.textContent = t.label;
+    label.className = 'grow-label'; label.textContent = t.label;
+    label.style.gridRow = rIdx + 2;
     g.appendChild(label);
 
     for (let s = 0; s < GRID_SLOTS; s++) {
       const cell = document.createElement('div');
       cell.className = 'gcell' + (s % 2 === 0 ? ' hour-start' : '');
-      cell.dataset.table = t.id;
-      cell.dataset.slot  = s;
+      cell.style.gridRow = rIdx + 2;
+      cell.style.gridColumn = s + 2;
       g.appendChild(cell);
     }
   });
+
+  // 建立獨立的畫布容器，與 Grid 完全重疊 (從 Column 2 延伸到最後)
+  const resContainer = document.createElement('div');
+  resContainer.className = 'res-container';
+  resContainer.id = 'res-container';
+  resContainer.style.gridRow = `2 / span ${TABLES.length}`;
+  g.appendChild(resContainer);
 }
 
-// ═══════════════════════════════════════════════════
-// LEGEND
-// ═══════════════════════════════════════════════════
 function buildLegend() {
-  const el = document.getElementById('legend');
-  el.innerHTML = '';
+  const el = document.getElementById('legend'); el.innerHTML = '';
   TABLES.forEach(t => {
-    el.innerHTML += `<div class="leg-item">
-      <div class="leg-dot" style="background:${t.bg};border:1px solid ${t.fg}33"></div>
-      ${t.label}
-    </div>`;
+    el.innerHTML += `<div class="leg-item"><div class="leg-dot" style="background:${t.bg};border:1px solid ${t.fg}33"></div>${t.label}</div>`;
   });
 }
 
 // ═══════════════════════════════════════════════════
-// 座標工具：gantt 內的 X → 分鐘數
-// ═══════════════════════════════════════════════════
-function ganttContentWidth() {
-  const gantt = document.getElementById('gantt');
-  return gantt.getBoundingClientRect().width - LABEL_W;
-}
-
-// clientX → 分鐘數（從 DAY_START 起算）
-function clientXToMin(clientX) {
-  const gantt    = document.getElementById('gantt');
-  const rect     = gantt.getBoundingClientRect();
-  const relX     = clientX - rect.left - LABEL_W + gantt.scrollLeft;
-  const ratio    = relX / ganttContentWidth();
-  const min      = DAY_START + ratio * DAY_MINS;
-  return Math.max(DAY_START, Math.min(DAY_END, Math.round(min)));
-}
-
-// 分鐘數 → gantt 內的 px left（相對 gantt 左邊，含 LABEL_W 偏移）
-function minToLeft(min) {
-  const ratio = (min - DAY_START) / DAY_MINS;
-  return LABEL_W + ratio * ganttContentWidth();
-}
-
-// clientY → table row index
-function clientYToRowIdx(clientY) {
-  const gantt     = document.getElementById('gantt');
-  const rect      = gantt.getBoundingClientRect();
-  const firstCell = document.querySelector('.gcell');
-  const headerH   = firstCell.getBoundingClientRect().top - rect.top;
-  const cellH     = firstCell.offsetHeight;
-  const relY      = clientY - rect.top - headerH;
-  const idx       = Math.floor(relY / cellH);
-  return Math.max(0, Math.min(TABLES.length - 1, idx));
-}
-
-// row index → top px（相對 gantt）
-function rowIdxToTop(rowIdx) {
-  const firstCell = document.querySelector('.gcell');
-  const gantt     = document.getElementById('gantt');
-  const rect      = gantt.getBoundingClientRect();
-  const headerH   = firstCell.getBoundingClientRect().top - rect.top;
-  const cellH     = firstCell.offsetHeight;
-  return headerH + rowIdx * cellH;
-}
-
-// ═══════════════════════════════════════════════════
-// RENDER
+// RENDER BLOCKS (修正：改用穩定的百分比定位，防止動態縮放錯位)
 // ═══════════════════════════════════════════════════
 function render() {
-  document.querySelectorAll('.res-block').forEach(e => e.remove());
+  const container = document.getElementById('res-container');
+  if (container) container.innerHTML = '';
   getReservations().forEach(r => renderBlock(r));
 }
 
 function renderBlock(r) {
-  const table = TABLES.find(t => t.id === r.tableId);
-  if (!table) return;
+  const container = document.getElementById('res-container');
+  if (!container) return;
+  const table = TABLES.find(t => t.id === r.tableId); if (!table) return;
+  const rowIdx = TABLES.findIndex(t => t.id === r.tableId);
 
-  const gantt   = document.getElementById('gantt');
-  const rowIdx  = TABLES.findIndex(t => t.id === r.tableId);
-  const cw      = ganttContentWidth();
-  const cellH   = document.querySelector('.gcell').offsetHeight;
-
-  // 用分鐘比例計算 left / width
-  const left  = minToLeft(r.startMin);
-  const width = (r.endMin - r.startMin) / DAY_MINS * cw - 4;
-  const top   = rowIdxToTop(rowIdx) + 6;
+  // 計算基於百分比的 X 軸與寬度
+  const leftPercent = ((r.startMin - DAY_START) / DAY_MINS) * 100;
+  const widthPercent = ((r.endMin - r.startMin) / DAY_MINS) * 100;
+  const rowHeight = 56; // 這裡對應 CSS 中 .gcell 的高
+  const topPx = rowIdx * rowHeight + 6;
 
   const block = document.createElement('div');
-  block.className    = 'res-block';
-  block.id           = 'rb-' + r.id;
-  block.dataset.id   = r.id;
-  block.style.cssText = `
-    left:${left}px; top:${top}px;
-    width:${Math.max(20, width)}px; height:${cellH - 12}px;
-    background:${table.bg}; color:${table.fg};
-    border:1.5px solid ${table.fg}30;
-  `;
+  block.className = 'res-block';
+  block.id = 'rb-' + r.id;
+  block.style.left = `${leftPercent}%`;
+  block.style.width = `${widthPercent}%`;
+  block.style.top = `${topPx}px`;
+  block.style.height = `${rowHeight - 12}px`;
+  block.style.background = table.bg;
+  block.style.color = table.fg;
+  block.style.border = `1.5px solid ${table.fg}40`;
 
   block.innerHTML = `
     <div class="res-name">${r.name}${r.suffix}</div>
     <div class="res-time">${minToTimeStr(r.startMin)}～${minToTimeStr(r.endMin)}</div>`;
 
-  // ── arrived 狀態 ────────────────────────────────
   if (r.arrived) {
     block.classList.add('arrived');
-    const icon = document.createElement('div');
-    icon.className = 'arrived-icon';
-    icon.textContent = '✔';
+    block.style.borderLeft = `5px solid ${table.fg}`;
+    const icon = document.createElement('div'); icon.className = 'arrived-icon'; icon.textContent = '✔';
     block.appendChild(icon);
   }
 
-  // ── Tooltip ─────────────────────────────────────
   block.addEventListener('mouseenter', e => showTooltip(e, r));
   block.addEventListener('mousemove',  e => moveTooltip(e));
   block.addEventListener('mouseleave', () => hideTooltip());
 
-  // ── 右鍵選單 ─────────────────────────────────────
   block.addEventListener('contextmenu', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    ctxTargetId = r.id;
-    hideTooltip();
+    e.preventDefault(); e.stopPropagation();
+    ctxTargetId = r.id; hideTooltip();
     updateCtxArrivedLabel(r.arrived);
     showCtxMenu(e.clientX, e.clientY);
   });
 
-  // ── 拖曳 + 左鍵點擊（合併在同一個 mousedown）────
-  // 在 mousedown 立刻鎖定 id；mouseup 時判斷移動距離，
-  // 距離 < 5px 視為「點擊」→ 顯示選單；否則視為拖曳
   makeDraggable(block, r);
-
-  gantt.appendChild(block);
+  container.appendChild(block);
 }
 
-// ctx-menu 顯示「已抵達」或「取消抵達」
 function updateCtxArrivedLabel(arrived) {
-  document.getElementById('ctx-arrived-btn').textContent =
-    arrived ? '✔ 取消抵達' : '✔ 已抵達';
+  document.getElementById('ctx-arrived-btn').textContent = arrived ? '✔ 取消抵達狀態' : '✔ 切換為已抵達';
 }
 
 // ═══════════════════════════════════════════════════
-// DRAG & DROP — Pointer Events（桌機 + 手機統一）
+// DRAG & DROP POINTER EVENTS (優化版)
 // ═══════════════════════════════════════════════════
 function makeDraggable(block, r) {
-  // pointerdown 統一處理 mouse / touch / stylus
   block.addEventListener('pointerdown', e => {
-    // 僅處理主要輸入（左鍵 / 第一觸點）
     if (e.button !== 0 && e.pointerType === 'mouse') return;
-    e.stopPropagation();
-    e.preventDefault();   // 阻止手機 scroll 干擾拖曳
+    e.stopPropagation(); e.preventDefault();
 
     ctxTargetId = r.id;
-    hideCtxMenu();
-    hideTooltip();
+    hideCtxMenu(); hideTooltip();
 
-    const gantt     = document.getElementById('gantt');
-    const blockRect = block.getBoundingClientRect();
-    const dur       = r.endMin - r.startMin;
+    const container = document.getElementById('res-container');
+    const containerRect = container.getBoundingClientRect();
+    const rowHeight = 56;
+    const duration = r.endMin - r.startMin;
 
-    const grabOffsetX = e.clientX - blockRect.left;
-    const grabOffsetY = e.clientY - blockRect.top;
-    const startX      = e.clientX;
-    const startY      = e.clientY;
+    const initialX = e.clientX;
+    const initialY = e.clientY;
+    
+    // 計算初始相對容器的 Top 與 Left 像素值
+    const startLeftPx = (parseFloat(block.style.left) / 100) * containerRect.width;
+    const startTopPx = parseFloat(block.style.top);
 
     block.style.transition = 'none';
     let isDragging = false;
 
-    // ── pointermove 綁在 document，手指移出色塊也不中斷 ──
     const onMove = mv => {
-      const dx = mv.clientX - startX;
-      const dy = mv.clientY - startY;
+      const dx = mv.clientX - initialX;
+      const dy = mv.clientY - initialY;
       if (!isDragging && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      
       if (!isDragging) {
         isDragging = true;
         block.classList.add('dragging');
       }
       mv.preventDefault();
-      const gr = gantt.getBoundingClientRect();
-      block.style.left = (mv.clientX - gr.left - grabOffsetX + gantt.scrollLeft) + 'px';
-      block.style.top  = (mv.clientY - gr.top  - grabOffsetY + gantt.scrollTop)  + 'px';
+      
+      // 使用 transform 達成無卡頓、極致流暢的拖動效果
+      block.style.transform = `translate(${dx}px, ${dy}px)`;
     };
 
-    // ── pointerup / pointercancel 同樣綁 document ────────
     const onUp = up => {
       document.removeEventListener('pointermove',   onMove);
       document.removeEventListener('pointerup',     onUp);
       document.removeEventListener('pointercancel', onUp);
+      
       block.style.transition = '';
       block.classList.remove('dragging');
 
       if (!isDragging) {
-        // 短點擊 → 顯示操作選單（桌機 + 手機共用）
+        block.style.transform = '';
         updateCtxArrivedLabel(r.arrived);
-        showCtxMenu(startX, startY + 4);
+        showCtxMenu(initialX, initialY + 5);
         return;
       }
 
-      const blockLeftClientX = up.clientX - grabOffsetX;
-      const newStartMin  = snapMin(clientXToMin(blockLeftClientX));
-      const clampedStart = Math.max(DAY_START, Math.min(DAY_END - dur, newStartMin));
-      const clampedEnd   = clampedStart + dur;
+      const finalDx = up.clientX - initialX;
+      const finalDy = up.clientY - initialY;
+      block.style.transform = '';
 
-      const blockTopClientY = up.clientY - grabOffsetY;
-      const newRowIdx  = clientYToRowIdx(blockTopClientY);
+      // 計算最終釋放點相對於畫布的位置
+      const finalLeftPx = startLeftPx + finalDx;
+      const finalTopPx = startTopPx + finalDy;
+
+      // 轉換為正確的時間分鐘數
+      const ratio = finalLeftPx / containerRect.width;
+      let newStartMin = DAY_START + ratio * DAY_MINS;
+      newStartMin = Math.round(newStartMin / 5) * 5; // 自動吸附 5 分鐘
+      const clampedStart = Math.max(DAY_START, Math.min(DAY_END - duration, newStartMin));
+      const clampedEnd = clampedStart + duration;
+
+      // 轉換為正確的桌號
+      let newRowIdx = Math.floor((finalTopPx + (rowHeight / 2)) / rowHeight);
+      newRowIdx = Math.max(0, Math.min(TABLES.length - 1, newRowIdx));
       const newTableId = TABLES[newRowIdx].id;
 
       const conflict = isConflict(newTableId, clampedStart, clampedEnd, r.id);
       if (conflict) {
-        alert(`⚠️ 時間衝突！\n${TABLES.find(t=>t.id===newTableId).label} 於 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已有「${conflict.name}${conflict.suffix}」的訂位。`);
+        alert(`⚠️ 無法移動！\n${TABLES.find(t=>t.id===newTableId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 段已有「${conflict.name}${conflict.suffix}」的預約。`);
         render();
         return;
       }
@@ -1090,179 +860,94 @@ function makeDraggable(block, r) {
       upsertReservation({ ...r, startMin: clampedStart, endMin: clampedEnd, tableId: newTableId });
     };
 
-    // 關鍵：綁在 document，確保手機手指移出色塊也能持續追蹤
     document.addEventListener('pointermove',   onMove, { passive: false });
     document.addEventListener('pointerup',     onUp);
     document.addEventListener('pointercancel', onUp);
   });
 }
 
-// 吸附：snap 到最近的 5 分鐘
-function snapMin(min) {
-  return Math.round(min / 5) * 5;
-}
-
 // ═══════════════════════════════════════════════════
-// TOOLTIP
+// TOOLTIP CONTROL
 // ═══════════════════════════════════════════════════
 const tip = document.getElementById('tooltip');
 function showTooltip(e, r) {
-  tip.innerHTML = `<strong>${r.name}${r.suffix}</strong>
-    📞 ${r.phone || '—'}<br>
-    👥 ${r.pax || '—'} 人<br>
-    ${r.note ? '📝 ' + r.note : ''}`;
-  tip.classList.add('show');
-  moveTooltip(e);
+  tip.innerHTML = `<strong>${r.name}${r.suffix}</strong>📞 電話：${r.phone || '無'}<br>👥 人數：${r.pax || '—'} 人<br>${r.note ? '📝 備註：' + r.note : ''}`;
+  tip.classList.add('show'); moveTooltip(e);
 }
-function moveTooltip(e) {
-  tip.style.left = (e.clientX + 16) + 'px';
-  tip.style.top  = (e.clientY - 10) + 'px';
-}
+function moveTooltip(e) { tip.style.left = (e.clientX + 16) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; }
 function hideTooltip() { tip.classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════
-// CONTEXT MENU
+// CONTEXT MENU CONTROL
 // ═══════════════════════════════════════════════════
 function showCtxMenu(x, y) {
   const menu = document.getElementById('ctx-menu');
-  menu.style.left = '-9999px';
-  menu.style.top  = '-9999px';
-  menu.classList.add('show');
-  const mw = menu.offsetWidth  || 160;
-  const mh = menu.offsetHeight || 140;
-  const safeX = Math.min(x, window.innerWidth  - mw - 8);
-  const safeY = (y + mh + 8 > window.innerHeight)
-                ? Math.max(8, y - mh) : y;
-  menu.style.left = Math.max(8, safeX) + 'px';
-  menu.style.top  = safeY + 'px';
+  menu.style.left = '-9999px'; menu.style.top = '-9999px'; menu.classList.add('show');
+  const mw = menu.offsetWidth || 150; const mh = menu.offsetHeight || 130;
+  const safeX = Math.min(x, window.innerWidth - mw - 10);
+  const safeY = (y + mh + 10 > window.innerHeight) ? Math.max(10, y - mh) : y;
+  menu.style.left = Math.max(10, safeX) + 'px'; menu.style.top = safeY + 'px';
 }
-function hideCtxMenu() {
-  document.getElementById('ctx-menu').classList.remove('show');
-}
+function hideCtxMenu() { document.getElementById('ctx-menu').classList.remove('show'); _cancelDelete(); }
 
-// ctx 按鈕全部用 mousedown，比 document click 早，確保 id 不被清掉
-document.getElementById('ctx-edit-btn').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  const id = ctxTargetId;
-  dbg('[ctx-edit] id:', id);
-  hideCtxMenu();
-  openModal(id);
-});
-
-document.getElementById('ctx-arrived-btn').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  const id = ctxTargetId;
-  dbg('[ctx-arrived] id:', id);
-  hideCtxMenu();
-  toggleArrived(id);
-});
-
-document.getElementById('ctx-delete-btn').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  const id = ctxTargetId;
-  dbg('[ctx-delete] id:', id);
-  // 不關選單，改為顯示 inline confirm bar
-  deleteReservation(id);
-});
-
-document.getElementById('ctx-confirm-yes').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  _doDelete();
-});
-
-document.getElementById('ctx-confirm-no').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  _cancelDelete();
-});
-
-// document click 關閉選單
+document.getElementById('ctx-edit-btn').addEventListener('pointerdown', e => { e.stopPropagation(); hideCtxMenu(); openModal(ctxTargetId); });
+document.getElementById('ctx-arrived-btn').addEventListener('pointerdown', e => { e.stopPropagation(); hideCtxMenu(); toggleArrived(ctxTargetId); });
+document.getElementById('ctx-delete-btn').addEventListener('pointerdown', e => { e.stopPropagation(); pendingDeleteId = ctxTargetId; document.getElementById('ctx-confirm-bar').style.display = 'flex'; });
+document.getElementById('ctx-confirm-yes').addEventListener('pointerdown', e => { e.stopPropagation(); _doDelete(); });
+document.getElementById('ctx-confirm-no').addEventListener('pointerdown', e => { e.stopPropagation(); _cancelDelete(); });
 document.addEventListener('click', () => hideCtxMenu());
 
-function editFromCtx()   { /* handled by mousedown */ }
-function deleteFromCtx() { /* handled by mousedown */ }
-
 // ═══════════════════════════════════════════════════
-// MODAL
+// MODAL MANAGEMENT
 // ═══════════════════════════════════════════════════
 function buildTableSelect() {
-  const sel = document.getElementById('f-table');
-  sel.innerHTML = TABLES.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
+  document.getElementById('f-table').innerHTML = TABLES.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
 }
 
 function buildTimeSelects() {
-  // 開始小時：10 ~ 17（最早開始，最晚結束 18:00）
-  const sh = document.getElementById('f-start-h');
-  sh.innerHTML = '';
-  for (let h = 10; h <= 17; h++) {
-    sh.innerHTML += `<option value="${h}">${String(h).padStart(2,'0')}</option>`;
-  }
+  const sh = document.getElementById('f-start-h'); sh.innerHTML = '';
+  for (let h = 10; h <= 17; h++) sh.innerHTML += `<option value="${h}">${String(h).padStart(2,'0')}</option>`;
+  const eh = document.getElementById('f-end-h'); eh.innerHTML = '';
+  for (let h = 10; h <= 18; h++) eh.innerHTML += `<option value="${h}">${String(h).padStart(2,'0')}</option>`;
 
-  // 結束小時：10 ~ 18
-  const eh = document.getElementById('f-end-h');
-  eh.innerHTML = '';
-  for (let h = 10; h <= 18; h++) {
-    eh.innerHTML += `<option value="${h}">${String(h).padStart(2,'0')}</option>`;
-  }
-
-  // 分鐘：00 ~ 59，每分鐘一格
+  // 修正：下拉選單調整為「5分鐘」為一單位，大幅提升手機 UI 體驗
   ['f-start-m', 'f-end-m'].forEach(id => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = '';
-    for (let m = 0; m < 60; m++) {
-      sel.innerHTML += `<option value="${m}">${String(m).padStart(2,'0')}</option>`;
-    }
+    const sel = document.getElementById(id); sel.innerHTML = '';
+    for (let m = 0; m < 60; m += 5) sel.innerHTML += `<option value="${m}">${String(m).padStart(2,'0')}</option>`;
   });
 }
 
-// 讀取開始/結束時間（分鐘數）
 function getFormStartMin() {
-  const h = parseInt(document.getElementById('f-start-h').value);
-  const m = parseInt(document.getElementById('f-start-m').value);
-  return h * 60 + m;
+  return parseInt(document.getElementById('f-start-h').value) * 60 + parseInt(document.getElementById('f-start-m').value);
 }
 function getFormEndMin() {
-  const h = parseInt(document.getElementById('f-end-h').value);
-  const m = parseInt(document.getElementById('f-end-m').value);
-  return h * 60 + m;
+  return parseInt(document.getElementById('f-end-h').value) * 60 + parseInt(document.getElementById('f-end-m').value);
+}
+function setFormStartMin(t) {
+  document.getElementById('f-start-h').value = Math.max(10, Math.min(17, Math.floor(t / 60)));
+  document.getElementById('f-start-m').value = Math.round((t % 60) / 5) * 5;
+}
+function setFormEndMin(t) {
+  const c = Math.min(DAY_END, Math.max(DAY_START + 5, t));
+  document.getElementById('f-end-h').value = Math.max(10, Math.min(18, Math.floor(c / 60)));
+  document.getElementById('f-end-m').value = Math.round((c % 60) / 5) * 5;
 }
 
-// 設定開始時間 select
-function setFormStartMin(totalMin) {
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  document.getElementById('f-start-h').value = Math.max(10, Math.min(17, h));
-  document.getElementById('f-start-m').value = m;
-}
-
-// 設定結束時間 select
-function setFormEndMin(totalMin) {
-  const clamped = Math.min(DAY_END, Math.max(DAY_START + 1, totalMin));
-  const h = Math.floor(clamped / 60);
-  const m = clamped % 60;
-  document.getElementById('f-end-h').value = Math.max(10, Math.min(18, h));
-  document.getElementById('f-end-m').value = m;
-}
-
-// 開始時間變動 → 自動計算結束時間（+120 分鐘，上限 18:00）
 function autoSetEndTime() {
-  const startMin = getFormStartMin();
-  const autoEnd  = Math.min(DAY_END, startMin + 120); // +2小時，不超過 18:00
-  setFormEndMin(autoEnd);
+  setFormEndMin(Math.min(DAY_END, getFormStartMin() + 120)); // 修改開始時間自動+2小時
 }
 
 function openModal(id = null) {
   editingId = id;
-  document.getElementById('modal-title').textContent = id ? '編輯訂位' : '新增訂位';
+  document.getElementById('modal-title').textContent = id ? '✏️ 編輯現有訂位' : '☕ 新增咖啡廳訂位';
 
   if (id) {
-    const r = getReservations().find(x => x.id === id);
-    if (!r) return;
+    const r = getReservations().find(x => x.id === id); if (!r) return;
     document.getElementById('f-name').value  = r.name;
     document.getElementById('f-phone').value = r.phone;
     document.getElementById('f-pax').value   = r.pax;
     document.getElementById('f-note').value  = r.note;
-    setFormStartMin(r.startMin);
-    setFormEndMin(r.endMin);
+    setFormStartMin(r.startMin); setFormEndMin(r.endMin);
     document.getElementById('f-table').value = r.tableId;
     setSuffix(r.suffix);
   } else {
@@ -1270,28 +955,18 @@ function openModal(id = null) {
     document.getElementById('f-phone').value = '';
     document.getElementById('f-pax').value   = '2';
     document.getElementById('f-note').value  = '';
-
-    // 預設：當前時間 snap 到 5 分鐘，+2 小時為結束
     const n = new Date();
-    const curMin   = snapMin(n.getHours() * 60 + n.getMinutes());
+    const curMin = Math.round((n.getHours() * 60 + n.getMinutes()) / 5) * 5;
     const defStart = Math.max(DAY_START, Math.min(DAY_END - 120, curMin));
-    setFormStartMin(defStart);
-    setFormEndMin(Math.min(DAY_END, defStart + 120));
+    setFormStartMin(defStart); setFormEndMin(Math.min(DAY_END, defStart + 120));
     document.getElementById('f-table').value = TABLES[0].id;
     setSuffix('先生');
   }
-
   document.getElementById('modal-overlay').classList.add('open');
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  editingId = null;
-}
-
-function closeModalOnBg(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingId = null; }
+function closeModalOnBg(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
 
 function setSuffix(s) {
   suffix = s;
@@ -1299,73 +974,60 @@ function setSuffix(s) {
   document.getElementById('btn-ms').classList.toggle('active', s === '小姐');
 }
 
-// 表單儲存 → 唯一寫入入口 upsertReservation
 function saveReservation() {
-  const name    = document.getElementById('f-name').value.trim();
-  const phone   = document.getElementById('f-phone').value.trim();
-  const pax     = document.getElementById('f-pax').value;
-  const note    = document.getElementById('f-note').value.trim();
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const pax = document.getElementById('f-pax').value;
+  const note = document.getElementById('f-note').value.trim();
   const tableId = document.getElementById('f-table').value;
 
-  if (!name) { alert('請輸入訂位人姓氏'); return; }
+  if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
 
-  // 全程用分鐘運算，不做字串拼接
   const startMin = getFormStartMin();
   const endMin   = getFormEndMin();
 
-  if (endMin <= startMin) { alert('結束時間必須晚於開始時間'); return; }
-  if (startMin < DAY_START || endMin > DAY_END) {
-    alert(`時間需在 10:00 ～ 18:00 之間`); return;
-  }
+  if (endMin <= startMin) { alert('結束時間不能早於或等於開始時間！'); return; }
+  if (startMin < DAY_START || endMin > DAY_END) { alert(`本店營業時間為 10:00 ～ 18:00`); return; }
 
-  // 衝突檢查（唯一定義）
   const conflict = isConflict(tableId, startMin, endMin, editingId);
   if (conflict) {
-    const tbl = TABLES.find(t => t.id === tableId);
-    alert(`⚠️ 時間衝突！\n${tbl.label} 於 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已有「${conflict.name}${conflict.suffix}」的訂位，請調整時間或桌號。`);
+    alert(`⚠️ 時間發生衝突！\n${TABLES.find(t => t.id === tableId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有「${conflict.name}${conflict.suffix}」的訂位。`);
     return;
   }
 
-  // 透過唯一寫入入口儲存
-  upsertReservation({
-    id: editingId, // null = 新增，有值 = 更新
-    name, suffix, phone, pax, note, tableId,
-    startMin, endMin
-  });
-
+  upsertReservation({ id: editingId, name, suffix, phone, pax, note, tableId, startMin, endMin });
   closeModal();
 }
 
 // ═══════════════════════════════════════════════════
-// INIT
+// INITIALIZATION
 // ═══════════════════════════════════════════════════
 buildGantt();
 buildLegend();
 buildTableSelect();
 buildTimeSelects();
 
+// 視窗大小改變時，觸發重新渲染以確保寬度百分比元件完美貼齊 (雙重防禦機制)
+window.addEventListener('resize', render);
+
 (async () => {
-if (!FB_ENABLED) document.getElementById('fb-banner').style.display='block';
-await loadAll();
-if (Object.keys(reservationsByDate).length === 0) {
-  const td = todayStr();
-  reservationsByDate[td] = [
-    { id:'s1', name:'陳',  suffix:'小姐', phone:'0912-111-222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60,    endMin:13*60    },
-    { id:'s6', name:'吳',  suffix:'先生', phone:'0955-111-333', pax:'3', note:'下午茶',   tableId:'t1', startMin:15*60,    endMin:17*60    },
-    { id:'s2', name:'林',  suffix:'先生', phone:'0933-222-333', pax:'4', note:'生日驚喜', tableId:'t3', startMin:12*60,    endMin:14*60    },
-    { id:'s7', name:'蔡',  suffix:'小姐', phone:'0911-222-444', pax:'2', note:'',         tableId:'t3', startMin:16*60,    endMin:18*60    },
-    { id:'s3', name:'王',  suffix:'先生', phone:'0977-333-444', pax:'6', note:'',         tableId:'tl', startMin:13*60,    endMin:16*60    },
-    { id:'s4', name:'張',  suffix:'小姐', phone:'0922-444-555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60,    endMin:12*60    },
-    { id:'s5', name:'李',  suffix:'先生', phone:'0988-555-666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 },
-    { id:'s8', name:'黃',  suffix:'小姐', phone:'0944-777-888', pax:'2', note:'過敏堅果', tableId:'t2', startMin:10*60+15, endMin:11*60+45 },
-  ];
-}
-switchDate(todayStr());
+  if (!FB_ENABLED) document.getElementById('fb-banner').style.display = 'block';
+  await loadAll();
+  
+  if (Object.keys(reservationsByDate).length === 0) {
+    const td = todayStr();
+    reservationsByDate[td] = [
+      { id:'s1', name:'陳', suffix:'小姐', phone:'0912-111-222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60, endMin:13*60 },
+      { id:'s6', name:'吳', suffix:'先生', phone:'0955-111-333', pax:'3', note:'下午茶', tableId:'t1', startMin:15*60, endMin:17*60 },
+      { id:'s2', name:'林', suffix:'先生', phone:'0933-222-333', pax:'4', note:'生日驚喜', tableId:'t3', startMin:12*60, endMin:14*60 },
+      { id:'s7', name:'蔡', suffix:'小姐', phone:'0911-222-444', pax:'2', note:'', tableId:'t3', startMin:16*60, endMin:18*60 },
+      { id:'s3', name:'王', suffix:'先生', phone:'0977-333-444', pax:'6', note:'', tableId:'tl', startMin:13*60, endMin:16*60 },
+      { id:'s4', name:'張', suffix:'小姐', phone:'0922-444-555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60, endMin:12*60 },
+      { id:'s5', name:'李', suffix:'先生', phone:'0988-555-666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 }
+    ];
+  }
+  switchDate(todayStr());
 })();
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="supabase.js"></script>
-
 </body>
 </html>
