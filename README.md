@@ -1,1 +1,2 @@
 # coffee-reservation
+management only 
