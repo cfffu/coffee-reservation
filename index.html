@@ -1049,6 +1049,25 @@ function saveReservation() {
   const tableId = document.getElementById('f-table').value;
 
   if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
+  
+  // ═══════════════════════════════════════════════════
+  // 手機號碼防呆檢查
+  // ═══════════════════════════════════════════════════
+  // 先移除非數字的字元（例如：使用者輸入的破折號 - 或空格），只保留純數字
+  const purePhone = phone.replace(/\D/g, '');
+  if (!purePhone) {
+    alert('請填寫聯絡電話！');
+    return;
+  }
+  if (purePhone.length !== 10) {
+    alert(`⚠️ 電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`);
+    return;
+  }
+  if (!purePhone.startsWith('09')) {
+    alert('⚠️ 電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。');
+    return;
+  }
+  // ═══════════════════════════════════════════════════
 
   const startMin = getFormStartMin();
   const endMin   = getFormEndMin();
