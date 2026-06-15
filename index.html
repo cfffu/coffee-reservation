@@ -1052,9 +1052,7 @@ function renderMergedBlock(items) {
   block.addEventListener('mouseleave', () => hideTooltip());
 
   // 右鍵選單或點擊
-  block.addEventListener('contextmenu', e => {
-    if (window.blockTouchHover) return;
-    
+  block.addEventListener('contextmenu', e => {  
     e.preventDefault(); e.stopPropagation();
     ctxTargetId = r.id; hideTooltip();
     updateCtxArrivedLabel(r.arrived);
@@ -1238,18 +1236,13 @@ function makeDraggable(block, r, items) {
       });
 
       // 情境 A：如果是手機版，且根本沒有觸發長按（只是輕觸點擊）
-      if (isTouch && !isLongPressed) {
-        // 強制隱藏 Tooltip
-        hideTooltip();
-        window.activeTouchTooltipId = null;
-
-        // 告訴全域：這次是觸控點擊，等等如果觸發了模擬的 mouseenter，一律給我封鎖住！
-        window.blockTouchHover = true;
-        setTimeout(() => { window.blockTouchHover = false; }, 400); // 400ms 後解鎖
-        
+      if (isTouch && !isLongPressed) {        
         // 輕觸直接彈出右鍵選單，方便手機一鍵操作「已抵達」或「刪除」
         updateCtxArrivedLabel(r.arrived);
         showCtxMenu(initialX, initialY + 5);
+
+        // 強制隱藏 Tooltip
+        hideTooltip();
         return;
       }
 
@@ -1263,7 +1256,7 @@ function makeDraggable(block, r, items) {
           // 手機版長按後原地放開：保持詳細資訊顯示在畫面上3秒
           const mockEvent = { clientX: up.clientX, clientY: up.clientY - 30 };
           showTooltip(mockEvent, r);
-          setTimeout(() => { hideTooltip(); }, 5000);
+          setTimeout(() => { hideTooltip(); }, 3000);
         }
         return;
       }
