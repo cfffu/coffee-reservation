@@ -1593,6 +1593,18 @@ function saveReservation() {
   const phone = document.getElementById('f-phone').value.trim();
   const pax = document.getElementById('f-pax').value;
   const note = document.getElementById('f-note').value.trim();
+  
+  // 讀取 VIP 欄位狀態
+  const isVip = document.getElementById('res-vip').checked;
+  let vipBg = null;
+  let vipFg = null;
+  
+  if (isVip) {
+    const selectedColor = document.querySelector('input[name="vip-color"]:checked').value;
+    const parts = selectedColor.split('|');
+    vipBg = parts[0]; // 背景色
+    vipFg = parts[1]; // 文字線條色
+  }
 
   if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
 
@@ -1624,18 +1636,6 @@ function saveReservation() {
     } else if (oldRes) {
       excludeIds = [oldRes.id];
     }
-  }
-
-  // 讀取 VIP 欄位狀態
-  const isVip = document.getElementById('res-vip').checked;
-  let vipBg = null;
-  let vipFg = null;
-  
-  if (isVip) {
-    const selectedColor = document.querySelector('input[name="vip-color"]:checked').value;
-    const parts = selectedColor.split('|');
-    vipBg = parts[0]; // 背景色
-    vipFg = parts[1]; // 文字線條色
   }
 
   for (let tId of checkedTableIds) {
@@ -1680,21 +1680,17 @@ function saveReservation() {
 // ═══════════════════════════════════════════════════
 // 頁面加載控制
 // ═══════════════════════════════════════════════════
-window.addEventListener('resize', () => {
-  if (sessionStorage.getItem('is_cafe_admin') === 'true') render();
-});
-
-// 頁面一載入的生命週期
-(() => {
-  // 檢查是否已經通過密碼驗證（免密鎖機制）
+window.addEventListener('DOMContentLoaded', async () => {
   if (sessionStorage.getItem('is_cafe_admin') === 'true') {
     document.getElementById('auth-overlay').style.display = 'none';
-    startSystem();
+    await startSystem(); // 登入過就直接載入資料並畫甘特圖
   } else {
-    // 沒登入過，強制守在密碼輸入框，什麼都不加載
-    document.getElementById('auth-password').focus();
+    document.getElementById('auth-overlay').style.display = 'flex'; // 沒登入過就強制顯示登入遮罩
+    if(document.getElementById('auth-password')) {
+      document.getElementById('auth-password').focus();
+    }
   }
-})();
+});
 </script>
 </body>
 </html>
