@@ -1047,7 +1047,7 @@ function renderMergedBlock(items) {
   }
 
   // 滑鼠懸停（Tooltip 提示與高亮）
-  block.addEventListener('mouseenter', e => if (window.blockTouchHover) return, showTooltip(e, r));
+  block.addEventListener('mouseenter', e => showTooltip(e, r));
   block.addEventListener('mousemove',  e => moveTooltip(e));
   block.addEventListener('mouseleave', () => hideTooltip());
 
