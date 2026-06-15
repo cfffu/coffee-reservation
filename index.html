@@ -1053,6 +1053,8 @@ function renderMergedBlock(items) {
 
   // 右鍵選單或點擊
   block.addEventListener('contextmenu', e => {
+    if (window.blockTouchHover) return;
+    
     e.preventDefault(); e.stopPropagation();
     ctxTargetId = r.id; hideTooltip();
     updateCtxArrivedLabel(r.arrived);
@@ -1240,6 +1242,10 @@ function makeDraggable(block, r, items) {
         // 強制隱藏 Tooltip
         hideTooltip();
         window.activeTouchTooltipId = null;
+
+        // 告訴全域：這次是觸控點擊，等等如果觸發了模擬的 mouseenter，一律給我封鎖住！
+        window.blockTouchHover = true;
+        setTimeout(() => { window.blockTouchHover = false; }, 400); // 400ms 後解鎖
         
         // 輕觸直接彈出右鍵選單，方便手機一鍵操作「已抵達」或「刪除」
         updateCtxArrivedLabel(r.arrived);
