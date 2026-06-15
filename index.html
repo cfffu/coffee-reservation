@@ -1135,13 +1135,18 @@ function updateCtxArrivedLabel(arrived) {
 
 function makeDraggable(block, r, items) {
   block.addEventListener('pointerdown', e => {
+    // 1. 基本安全防呆
     if (e.button !== 0 && e.pointerType === 'mouse') return;
-    e.stopPropagation(); e.preventDefault();
+    
+    // 如果是點擊到了右鍵選單或其他控制項，不觸發拖移
+    if (e.target.closest('.context-menu') || e.target.closest('.modal')) return;
+
+    e.stopPropagation();
 
     ctxTargetId = r.id;
-    hideCtxMenu(); hideTooltip();
+    hideCtxMenu();
 
-    const container = document.getElementById('res-container');
+    const container = document.getElementById('gantt');
     const containerRect = container.getBoundingClientRect();
     const rowHeight = 56;
     const duration = r.endMin - r.startMin;
@@ -1149,67 +1154,141 @@ function makeDraggable(block, r, items) {
     const initialX = e.clientX;
     const initialY = e.clientY;
     
-    const startLeftPx = (parseFloat(block.style.left) / 100) * containerRect.width;
+    // 計算水平網格的有效總寬度 (扣除左側 100px 固定寬度)
+    const availableWidth = containerRect.width - 100;
+    const startLeftPx = ((r.startMin - DAY_START) / DAY_MINS) * availableWidth;
     const startTopPx = parseFloat(block.style.top);
 
-    block.style.transition = 'none';
+    // 取得同一個 group 的所有畫面區塊
+    const groupBlocks = r.groupId ? document.querySelectorAll(`[data-group-id="${r.groupId}"]`) : [block];
+
     let isDragging = false;
+    let isLongPressed = false; 
+    let longPressTimer = null;
+
+    // 判斷是否為手機觸控
+    const isTouch = e.pointerType === 'touch';
+
+    // ─── 核心長按邏輯（僅針對手機觸控） ───
+    if (isTouch) {
+      // 啟動 500 毫秒長按計時器
+      longPressTimer = setTimeout(() => {
+        isLongPressed = true;
+        
+        // 1. 給店員一個微小的震動回饋（Haptic Feedback，部分手機支援）
+        if (navigator.vibrate) navigator.vibrate(40);
+        
+        // 2. 畫面上加入被鎖定準備拖移的視覺效果 (可自由在 CSS 加樣式，例如放大或加陰影)
+        groupBlocks.forEach(b => b.classList.add('ready-to-drag'));
+
+        // 3. 觸發長按後，立刻顯示詳細訂位資訊 Tooltip
+        // 模擬一個位置傳給 Tooltip，讓它出現在手指上方
+        const mockEvent = { clientX: initialX, clientY: initialY - 30 };
+        showTooltip(mockEvent, r);
+        
+        // 讓 Tooltip 固定在畫面上（不要隨滑鼠飄移）
+        const tooltip = document.getElementById('tooltip');
+        if (tooltip) {
+          tooltip.style.opacity = '1';
+          tooltip.style.visibility = 'visible';
+        }
+      }, 500); // 500ms 定義為長按
+    } else {
+      // 電腦版滑鼠不需要長按，直接視為已通過長按條件
+      isLongPressed = true;
+    }
 
     const onMove = mv => {
       const dx = mv.clientX - initialX;
       const dy = mv.clientY - initialY;
-      if (!isDragging && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-      
+
+      // 手指或滑鼠輕微晃動防呆（小於 6px 不算移動）
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+
+      // 如果是手機觸控，但還沒達到長按秒數就移動了，直接取消長按計時器（視為滑動網頁）
+      if (isTouch && !isLongPressed) {
+        clearTimeout(longPressTimer);
+        return;
+      }
+
+      // 滿足長按（或電腦版）且真正開始移動
       if (!isDragging) {
         isDragging = true;
-        block.classList.add('dragging');
+        groupBlocks.forEach(b => {
+          b.classList.remove('ready-to-drag');
+          b.classList.add('dragging');
+        });
+        
+        // 💡 進行拖移動作時，隱藏詳細資訊 Tooltip
+        hideTooltip();
       }
+
       mv.preventDefault();
-      block.style.transform = `translate(${dx}px, ${dy}px)`;
+      
+      // 連動群組集體跟隨移動
+      groupBlocks.forEach(b => {
+        b.style.transform = `translate(${dx}px, ${dy}px)`;
+      });
     };
 
     const onUp = up => {
+      // 清除計時器
+      if (longPressTimer) clearTimeout(longPressTimer);
+
       document.removeEventListener('pointermove',   onMove);
       document.removeEventListener('pointerup',     onUp);
       document.removeEventListener('pointercancel', onUp);
       
-      block.style.transition = '';
-      block.classList.remove('dragging');
+      groupBlocks.forEach(b => {
+        b.style.transition = '';
+        b.classList.remove('dragging', 'ready-to-drag');
+        b.style.transform = '';
+      });
 
-      if (!isDragging) {
-        block.style.transform = '';
+      // 情境 A：如果是手機版，且根本沒有觸發長按（只是輕觸點擊）
+      if (isTouch && !isLongPressed) {
+        // 輕觸直接彈出右鍵選單，方便手機一鍵操作「已抵達」或「刪除」
         updateCtxArrivedLabel(r.arrived);
         showCtxMenu(initialX, initialY + 5);
         return;
       }
 
-      const finalDx = up.clientX - initialX;
-      const finalDy = up.clientY - initialY;
-      block.style.transform = '';
+      // 情境 B：觸發了長按，但是店員最後放開時「沒有進行任何拖移」
+      if (!isDragging) {
+        if (!isTouch) {
+          // 電腦版點擊：顯示右鍵選單
+          updateCtxArrivedLabel(r.arrived);
+          showCtxMenu(initialX, initialY + 5);
+        } else {
+          // 手機版長按後原地放開：保持詳細資訊顯示在畫面上，不關閉
+          const mockEvent = { clientX: up.clientX, clientY: up.clientY - 30 };
+          showTooltip(mockEvent, r);
+        }
+        return;
+      }
 
-      // 1. 計算新的時間軸位置 (X)
+      // 情境 C：真正進行了拖移，並在此處放下
+      const finalDx = up.clientX - initialX;
+      const finalYPx = startTopPx + (up.clientY - initialY);
+
+      // 1. 計算新時間軸位置 (X)
       const finalLeftPx = startLeftPx + finalDx;
-      const ratio = finalLeftPx / containerRect.width;
+      const ratio = finalLeftPx / availableWidth;
       let newStartMin = DAY_START + ratio * DAY_MINS;
       newStartMin = Math.round(newStartMin / 5) * 5; 
       const clampedStart = Math.max(DAY_START, Math.min(DAY_END - duration, newStartMin));
       const clampedEnd = clampedStart + duration;
 
-      // 2. 計算垂直移動了幾個 Row 的間距 (Y)
-      const currentTopPx = startTopPx + finalDy;
-      // 找出原本這群 items 裡面最頂端那一桌的 row index
-      const originalRowIndices = items.map(item => TABLES.findIndex(t => t.id === item.tableId));
-      const originalMinRowIdx = Math.min(...originalRowIndices);
-      
-      // 計算移動後的全新最頂端 row index
-      let newMinRowIdx = Math.round(currentTopPx / rowHeight);
-      let rowDelta = newMinRowIdx - originalMinRowIdx; // 相差幾列
+      // 2. 計算垂直移動了幾個 Row 的間距差 (Y Delta)
+      const currentRelativeTop = finalYPx - 33 - 6;
+      let newRowIdxForMaster = Math.round(currentRelativeTop / rowHeight);
+      const oldRowIdxForMaster = TABLES.findIndex(t => t.id === r.tableId);
+      let rowDelta = newRowIdxForMaster - oldRowIdxForMaster;
 
       const rs = getReservations();
-      // 收集整組需要排除檢查的 ID
       const excludeIds = items.map(x => x.id);
 
-      // 檢查移動後的每一張新桌子是否會撞到別人
+      // 檢查整組每一張新桌子是否合法
       let hasConflict = false;
       let conflictMsg = "";
       const updatedTableMappings = [];
@@ -1218,7 +1297,6 @@ function makeDraggable(block, r, items) {
         const oldRowIdx = TABLES.findIndex(t => t.id === item.tableId);
         let newRowIdx = oldRowIdx + rowDelta;
         
-        // 邊界防呆：如果整組移出桌位圖外面，就彈回
         if (newRowIdx < 0 || newRowIdx >= TABLES.length) {
           hasConflict = true;
           conflictMsg = "⚠️ 超出桌位系統範圍！";
@@ -1229,7 +1307,7 @@ function makeDraggable(block, r, items) {
         const conflict = isConflict(newTableId, clampedStart, clampedEnd, excludeIds);
         if (conflict) {
           hasConflict = true;
-          conflictMsg = `⚠️ 無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已有預約。`;
+          conflictMsg = `⚠️ 無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有預約。`;
           break;
         }
         updatedTableMappings.push({ id: item.id, newTableId });
@@ -1241,7 +1319,7 @@ function makeDraggable(block, r, items) {
         return;
       }
 
-      // 3. 真正寫入更新資料
+      // 3. 驗證全過，寫入並儲存資料
       updatedTableMappings.forEach(mapping => {
         const targetRes = rs.find(x => x.id === mapping.id);
         if (targetRes) {
@@ -1251,7 +1329,24 @@ function makeDraggable(block, r, items) {
         }
       });
 
-      saveAll(); render();
+      // 建立更新後的訂位物件拷貝，用來更新放開後的 Tooltip 顯示
+      const updatedMasterRes = { 
+        ...r, 
+        startMin: clampedStart, 
+        endMin: clampedEnd,
+        tableId: updatedTableMappings.find(m => m.id === r.id)?.newTableId || r.tableId
+      };
+
+      saveAll(); 
+      render();
+
+      // 💡 4. 完成拖移重新渲染後，在手指放開的位置「再次顯示更新後的詳細資訊」
+      setTimeout(() => {
+        const mockEvent = { clientX: up.clientX, clientY: up.clientY - 30 };
+        showTooltip(mockEvent, updatedMasterRes);
+        // 設定 3 秒後自動隱藏詳細資訊，避免擋住畫面
+        setTimeout(() => { hideTooltip(); }, 3000);
+      }, 50);
     };
 
     document.addEventListener('pointermove',   onMove, { passive: false });
