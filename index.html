@@ -1237,6 +1237,10 @@ function makeDraggable(block, r, items) {
 
       // 情境 A：如果是手機版，且根本沒有觸發長按（只是輕觸點擊）
       if (isTouch && !isLongPressed) {
+        // 強制隱藏 Tooltip
+        hideTooltip();
+        window.activeTouchTooltipId = null;
+        
         // 輕觸直接彈出右鍵選單，方便手機一鍵操作「已抵達」或「刪除」
         updateCtxArrivedLabel(r.arrived);
         showCtxMenu(initialX, initialY + 5);
