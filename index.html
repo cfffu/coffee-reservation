@@ -510,28 +510,6 @@
     box-shadow: 0 3px 12px rgba(100,60,20,.15);
   }
   .btn-login:hover { background: #5a3a1a; }
-  .vip-color-badge {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-    border: 2px solid transparent;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    transition: all 0.2s ease;
-  }
-  .vip-color-badge:has(input:checked) {
-    border-color: #000000;
-    transform: scale(1.08);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 </style>
 </head>
 <body>
@@ -634,33 +612,6 @@
       <label>人數</label>
       <input type="number" id="f-pax" min="1" max="30" placeholder="2" style="max-width:100px">
     </div>
-    <div class="form-group" style="margin-top: 15px;">
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #d9534f;">
-      <input type="checkbox" id="res-vip" onchange="toggleVipColorSelect()" style="width: 18px; height: 18px; cursor: pointer;">
-      標記為 [重要人物 / VIP]
-      </label>
-    </div>
-
-    <div class="form-group" id="vip-color-section" style="display: none; margin-top: 10px; animation: fadeIn 0.3s;">
-      <label>請選擇專屬桌色：</label>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
-        <label class="vip-color-badge" style="background:#ff0055; color:#fff;">
-          <input type="radio" name="vip-color" value="#ff0055|#ffffff" checked> 霓虹紅
-        </label>
-        <label class="vip-color-badge" style="background:#ffea00; color:#000;">
-          <input type="radio" name="vip-color" value="#ffea00|#000000"> 耀眼黃
-        </label>
-        <label class="vip-color-badge" style="background:#00ff66; color:#000;">
-        <input type="radio" name="vip-color" value="#00ff66|#000000"> 螢光綠
-        </label>
-        <label class="vip-color-badge" style="background:#cc00ff; color:#fff;">
-          <input type="radio" name="vip-color" value="#cc00ff|#ffffff"> 魅惑紫
-        </label>
-        <label class="vip-color-badge" style="background:#ff6600; color:#fff;">
-          <input type="radio" name="vip-color" value="#ff6600|#ffffff"> 炙熱橘
-        </label>
-      </div>
-    </div>
     <div class="form-row">
       <label>指派桌號 (可多選佔多桌)</label>
       <div class="table-checkbox-grid" id="table-checkbox-container">
@@ -699,24 +650,24 @@ if (FB_ENABLED) {
 }
 
 const TABLES = [
-  // 1~6號桌：鮮明溫暖的太妃糖橘棕色系
-  { id: 't1',  label: '1號桌',          bg: '#f0ad4e', fg: '#4a2f00' },
-  { id: 't2',  label: '2號桌',          bg: '#f0ad4e', fg: '#4a2f00' },
-  { id: 't3',  label: '3號桌',          bg: '#f0ad4e', fg: '#4a2f00' },
-  { id: 't5',  label: '5號桌',          bg: '#f0ad4e', fg: '#4a2f00' },
-  { id: 't6',  label: '6號桌',          bg: '#f0ad4e', fg: '#4a2f00' },
+  // 溫潤拿鐵色系
+  { id: 't1',  label: '1號桌',          bg: '#ede6db', fg: '#543d2b' },
+  { id: 't2',  label: '2號桌',          bg: '#ede6db', fg: '#543d2b' },
+  { id: 't3',  label: '3號桌',          bg: '#ede6db', fg: '#543d2b' },
+  { id: 't5',  label: '5號桌',          bg: '#ede6db', fg: '#543d2b' },
+  { id: 't6',  label: '6號桌',          bg: '#ede6db', fg: '#543d2b' },
   
-  // 小包廂：高彩度莓果粉色系
-  { id: 'ts',  label: '小包廂',         bg: '#e9573f', fg: '#ffffff' },
+  // 優雅焙茶粉色系
+  { id: 'ts',  label: '小包廂',         bg: '#f3e1dc', fg: '#7c4b3e' },
   
-  // 大包廂（圓桌）：活力森林綠色系
-  { id: 'tl',  label: '大包廂（圓桌）', bg: '#48b04b', fg: '#ffffff' },
+  // 沉穩抹茶綠色系
+  { id: 'tl',  label: '大包廂（圓桌）', bg: '#dfebd5', fg: '#3d5229' },
   
-  // 大包廂1~4：晴空寶藍色系
-  { id: 'lb1', label: '大包廂(1)',      bg: '#2296f3', fg: '#ffffff' },
-  { id: 'lb2', label: '大board(2)',     bg: '#2296f3', fg: '#ffffff' },
-  { id: 'lb3', label: '大包廂(3)',      bg: '#2296f3', fg: '#ffffff' },
-  { id: 'lb4', label: '大包廂(4)',      bg: '#2296f3', fg: '#ffffff' },
+  // 靜謐深海藍灰色系
+  { id: 'lb1', label: '大包廂(1)',      bg: '#e2ebf4', fg: '#384d61' },
+  { id: 'lb2', label: '大包廂(2)',      bg: '#e2ebf4', fg: '#384d61' },
+  { id: 'lb3', label: '大包廂(3)',      bg: '#e2ebf4', fg: '#384d61' },
+  { id: 'lb4', label: '大包廂(4)',      bg: '#e2ebf4', fg: '#384d61' },
 ];
 
 const DAY_START = 10.5 * 60;  // 10:00
@@ -815,12 +766,6 @@ async function startSystem() {
     ];
   }
   switchDate(todayStr());
-}
-
-function toggleVipColorSelect() {
-  const isVip = document.getElementById('res-vip').checked;
-  const section = document.getElementById('vip-color-section');
-  section.style.display = isVip ? 'block' : 'none';
 }
 
 function timeStrToMin(str) {
@@ -1062,31 +1007,6 @@ function renderMergedBlock(items) {
   if (r.groupId) {
     block.setAttribute('data-group-id', r.groupId);
   }
-
-  const r = items[0];
-  const mainTable = TABLES.find(t => t.id === r.tableId) || TABLES[0];
-
-  // 決定方塊色彩：如果是重要人物，採用特製高彩度飽和色；否則採用剛剛調整的高彩度基本桌色
-  const finalBg = r.isVip ? r.vipBg : mainTable.bg;
-  const finalFg = r.isVip ? r.vipFg : mainTable.fg;
-
-  const block = document.createElement('div');
-  block.className = 'res-block';
-  // 如果是 VIP，額外加一個特製的 CSS class 方便做呼吸燈或閃爍特效（選加）
-  if (r.isVip) block.classList.add('vip-block'); 
-  
-  block.style.left = `calc(100px + ${leftPercent}% * (100% - 100px) / 100)`;
-  block.style.width = `calc(${widthPercent}% * (100% - 100px) / 100)`;
-  block.style.top = `${topPx}px`;
-  block.style.height = `${blockHeight}px`;
-  
-  // 套用顏色
-  block.style.background = finalBg;
-  block.style.color = finalFg;
-  block.style.border = r.isVip ? `2px solid #000000` : `1.5px solid ${finalFg}40`;
-  if (r.isVip) {
-    block.style.boxShadow = '0 4px 15px rgba(0,0,0,0.35)';
-  }
   
   // 賦予融合大框框的樣式
   block.style.left = `${leftPercent}%`;
@@ -1102,13 +1022,11 @@ function renderMergedBlock(items) {
     block.style.justifyContent = 'center';
   }
 
-  // 顯示文字：如果是 VIP，名字前大膽加上皇冠 👑
-  const vipIcon = r.isVip ? `<span style="color:#ffea00; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); margin-right:4px;">👑</span>` : '';
-  const groupTag = r.groupId ? `<span style="font-size:10px; opacity:0.85; display:inline-block; margin-left:4px;">(併${items.length}桌)</span>` : '';
-  
+  // 顯示文字
+  const groupTag = r.groupId ? `<span style="font-size:10px;opacity:0.75;display:inline-block;margin-left:4px;">(併${items.length}桌)</span>` : '';
   block.innerHTML = `
-    <div class="res-name" style="font-weight:700; display:flex; align-items:center;">${vipIcon}${r.name}${r.suffix}${groupTag}</div>
-    <div class="res-time" style="font-weight:500;">${minToTimeStr(r.startMin)}～${minToTimeStr(r.endMin)}</div>
+    <div class="res-name" style="font-weight:600;">${r.name}${r.suffix}${groupTag}</div>
+    <div class="res-time">${minToTimeStr(r.startMin)}～${minToTimeStr(r.endMin)}</div>
   `;
 
   // 已抵達狀態（大框框的左側會整條變粗線）
@@ -1217,15 +1135,13 @@ function updateCtxArrivedLabel(arrived) {
 
 function makeDraggable(block, r, items) {
   block.addEventListener('pointerdown', e => {
-    // 基本安全防呆
     if (e.button !== 0 && e.pointerType === 'mouse') return;
-    if (e.target.closest('.context-menu') || e.target.closest('.modal')) return;
+    e.stopPropagation(); e.preventDefault();
 
-    e.stopPropagation();
     ctxTargetId = r.id;
-    hideCtxMenu();
+    hideCtxMenu(); hideTooltip();
 
-    const container = document.getElementById('gantt');
+    const container = document.getElementById('res-container');
     const containerRect = container.getBoundingClientRect();
     const rowHeight = 56;
     const duration = r.endMin - r.startMin;
@@ -1233,127 +1149,67 @@ function makeDraggable(block, r, items) {
     const initialX = e.clientX;
     const initialY = e.clientY;
     
-    const availableWidth = containerRect.width - 100;
-    const startLeftPx = ((r.startMin - DAY_START) / DAY_MINS) * availableWidth;
+    const startLeftPx = (parseFloat(block.style.left) / 100) * containerRect.width;
     const startTopPx = parseFloat(block.style.top);
 
-    const groupBlocks = r.groupId ? document.querySelectorAll(`[data-group-id="${r.groupId}"]`) : [block];
-
+    block.style.transition = 'none';
     let isDragging = false;
-    let isLongPressed = false; 
-    let longPressTimer = null;
-    const isTouch = e.pointerType === 'touch';
-
-    // ─── 手機版長按計時器 ───
-    if (isTouch) {
-      // 💡 先確保舊的 Tooltip 先清空，避免畫面殘留
-      hideTooltip();
-
-      longPressTimer = setTimeout(() => {
-        isLongPressed = true;
-        
-        if (navigator.vibrate) navigator.vibrate(40); // 震動回饋
-        groupBlocks.forEach(b => b.classList.add('ready-to-drag'));
-
-        // 💡 條件 A：長按成功，立刻秀出詳細資訊 Tooltip
-        const mockEvent = { clientX: initialX, clientY: initialY - 40 };
-        showTooltip(mockEvent, r);
-        
-        // 鎖定 Tooltip 狀態，並在全域做一個標記，表示現在手機版正開著一個 Tooltip
-        window.activeTouchTooltipId = r.id;
-      }, 500); 
-    } else {
-      isLongPressed = true;
-    }
 
     const onMove = mv => {
       const dx = mv.clientX - initialX;
       const dy = mv.clientY - initialY;
-
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-
-      // 手機版未滿長按時間就移動，直接視為滑動網頁，取消計時器並隱藏 Tooltip
-      if (isTouch && !isLongPressed) {
-        clearTimeout(longPressTimer);
-        hideTooltip();
-        return;
-      }
-
-      // 滿足長按且真正開始拖移
+      if (!isDragging && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      
       if (!isDragging) {
         isDragging = true;
-        groupBlocks.forEach(b => {
-          b.classList.remove('ready-to-drag');
-          b.classList.add('dragging');
-        });
-        
-        // 💡 條件 B：開始拖移動作，立刻隱藏詳細資訊，避免擋路
-        hideTooltip();
-        window.activeTouchTooltipId = null;
+        block.classList.add('dragging');
       }
-
       mv.preventDefault();
-      groupBlocks.forEach(b => {
-        b.style.transform = `translate(${dx}px, ${dy}px)`;
-      });
+      block.style.transform = `translate(${dx}px, ${dy}px)`;
     };
 
     const onUp = up => {
-      if (longPressTimer) clearTimeout(longPressTimer);
-
       document.removeEventListener('pointermove',   onMove);
       document.removeEventListener('pointerup',     onUp);
       document.removeEventListener('pointercancel', onUp);
       
-      groupBlocks.forEach(b => {
-        b.style.transition = '';
-        b.classList.remove('dragging', 'ready-to-drag');
-        b.style.transform = '';
-      });
+      block.style.transition = '';
+      block.classList.remove('dragging');
 
-      // 情境 1：手機版輕觸點擊（未達長按，手就放開了）
-      if (isTouch && !isLongPressed) {
-        // 💡 輕觸直接消失 Tooltip，改為跳右鍵快選選單
-        hideTooltip();
-        window.activeTouchTooltipId = null;
+      if (!isDragging) {
+        block.style.transform = '';
         updateCtxArrivedLabel(r.arrived);
         showCtxMenu(initialX, initialY + 5);
         return;
       }
 
-      // 情境 2：手機版長按成功，但是「原地放開，沒有進行任何拖移」
-      if (!isDragging) {
-        if (!isTouch) {
-          // 電腦版點擊：直接開啟選單
-          updateCtxArrivedLabel(r.arrived);
-          showCtxMenu(initialX, initialY + 5);
-        } else {
-          // 手機版：既然原地放開，詳細資訊就繼續顯示在畫面上，不理它（等點擊空白處才消失）
-          const mockEvent = { clientX: up.clientX, clientY: up.clientY - 40 };
-          showTooltip(mockEvent, r);
-        }
-        return;
-      }
-
-      // 情境 3：真正進行了拖移，並在全新位置放開
       const finalDx = up.clientX - initialX;
-      const finalYPx = startTopPx + (up.clientY - initialY);
+      const finalDy = up.clientY - initialY;
+      block.style.transform = '';
 
+      // 1. 計算新的時間軸位置 (X)
       const finalLeftPx = startLeftPx + finalDx;
-      const ratio = finalLeftPx / availableWidth;
+      const ratio = finalLeftPx / containerRect.width;
       let newStartMin = DAY_START + ratio * DAY_MINS;
       newStartMin = Math.round(newStartMin / 5) * 5; 
       const clampedStart = Math.max(DAY_START, Math.min(DAY_END - duration, newStartMin));
       const clampedEnd = clampedStart + duration;
 
-      const currentRelativeTop = finalYPx - 33 - 6;
-      let newRowIdxForMaster = Math.round(currentRelativeTop / rowHeight);
-      const oldRowIdxForMaster = TABLES.findIndex(t => t.id === r.tableId);
-      let rowDelta = newRowIdxForMaster - oldRowIdxForMaster;
+      // 2. 計算垂直移動了幾個 Row 的間距 (Y)
+      const currentTopPx = startTopPx + finalDy;
+      // 找出原本這群 items 裡面最頂端那一桌的 row index
+      const originalRowIndices = items.map(item => TABLES.findIndex(t => t.id === item.tableId));
+      const originalMinRowIdx = Math.min(...originalRowIndices);
+      
+      // 計算移動後的全新最頂端 row index
+      let newMinRowIdx = Math.round(currentTopPx / rowHeight);
+      let rowDelta = newMinRowIdx - originalMinRowIdx; // 相差幾列
 
       const rs = getReservations();
+      // 收集整組需要排除檢查的 ID
       const excludeIds = items.map(x => x.id);
 
+      // 檢查移動後的每一張新桌子是否會撞到別人
       let hasConflict = false;
       let conflictMsg = "";
       const updatedTableMappings = [];
@@ -1362,6 +1218,7 @@ function makeDraggable(block, r, items) {
         const oldRowIdx = TABLES.findIndex(t => t.id === item.tableId);
         let newRowIdx = oldRowIdx + rowDelta;
         
+        // 邊界防呆：如果整組移出桌位圖外面，就彈回
         if (newRowIdx < 0 || newRowIdx >= TABLES.length) {
           hasConflict = true;
           conflictMsg = "⚠️ 超出桌位系統範圍！";
@@ -1372,7 +1229,7 @@ function makeDraggable(block, r, items) {
         const conflict = isConflict(newTableId, clampedStart, clampedEnd, excludeIds);
         if (conflict) {
           hasConflict = true;
-          conflictMsg = `⚠️ 無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有預約。`;
+          conflictMsg = `⚠️ 無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已有預約。`;
           break;
         }
         updatedTableMappings.push({ id: item.id, newTableId });
@@ -1384,7 +1241,7 @@ function makeDraggable(block, r, items) {
         return;
       }
 
-      // 寫入並更新資料
+      // 3. 真正寫入更新資料
       updatedTableMappings.forEach(mapping => {
         const targetRes = rs.find(x => x.id === mapping.id);
         if (targetRes) {
@@ -1394,23 +1251,7 @@ function makeDraggable(block, r, items) {
         }
       });
 
-      const updatedMasterRes = { 
-        ...r, 
-        startMin: clampedStart, 
-        endMin: clampedEnd,
-        tableId: updatedTableMappings.find(m => m.id === r.id)?.newTableId || r.tableId
-      };
-
-      saveAll(); 
-      render();
-
-      // 💡 條件 C：完成拖移後，在全新的最終位置顯示「更新後的詳細資訊」
-      // 改為固定顯示，直到店員下次點擊空白處才會關閉，不再用 setTimeout 閃退，這樣店員才能看清楚時間
-      setTimeout(() => {
-        const mockEvent = { clientX: up.clientX, clientY: up.clientY - 40 };
-        showTooltip(mockEvent, updatedMasterRes);
-        window.activeTouchTooltipId = updatedMasterRes.id;
-      }, 50);
+      saveAll(); render();
     };
 
     document.addEventListener('pointermove',   onMove, { passive: false });
@@ -1418,20 +1259,6 @@ function makeDraggable(block, r, items) {
     document.addEventListener('pointercancel', onUp);
   });
 }
-
-// 💡 手機版點擊外面空白、網格、選單以外的地方時，自動讓詳細資訊 Tooltip 消失
-document.addEventListener('pointerdown', e => {
-  // 如果點擊的地方是預約塊 (.res-block)、彈窗 (.modal) 或右鍵選單 (.context-menu)，不要阻斷
-  if (e.target.closest('.res-block') || e.target.closest('.modal') || e.target.closest('.context-menu')) {
-    return;
-  }
-  
-  // 如果點擊的是外面任何空白處（例如時間軸、網格空白背景），且目前畫面上有手機開啟的 Tooltip
-  if (window.activeTouchTooltipId) {
-    hideTooltip();
-    window.activeTouchTooltipId = null;
-  }
-});
 
 const tip = document.getElementById('tooltip');
 function showTooltip(e, r) {
@@ -1556,26 +1383,6 @@ function openModal(id = null) {
       if (cb) cb.checked = true;
     }
   }
-  
-  if (!editId) {
-    // 新增訂位：重置 VIP 狀態
-    document.getElementById('res-vip').checked = false;
-    document.getElementById('vip-color-section').style.display = 'none';
-    document.querySelector('input[name="vip-color"][value="#ff0055|#ffffff"]').checked = true;
-  } else {
-    // 編輯訂位：還原舊有 VIP 資料
-    const rs = getReservations();
-    const r = rs.find(x => x.id === editId);
-    if (r) {
-      document.getElementById('res-vip').checked = !!r.isVip;
-      document.getElementById('vip-color-section').style.display = r.isVip ? 'block' : 'none';
-      if (r.isVip && r.vipBg) {
-        const targetValue = `${r.vipBg}|${r.vipFg}`;
-        const radio = document.querySelector(`input[name="vip-color"][value="${targetValue}"]`);
-        if (radio) radio.checked = true;
-      }
-    }
-  }
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -1593,18 +1400,6 @@ function saveReservation() {
   const phone = document.getElementById('f-phone').value.trim();
   const pax = document.getElementById('f-pax').value;
   const note = document.getElementById('f-note').value.trim();
-  
-  // 讀取 VIP 欄位狀態
-  const isVip = document.getElementById('res-vip').checked;
-  let vipBg = null;
-  let vipFg = null;
-  
-  if (isVip) {
-    const selectedColor = document.querySelector('input[name="vip-color"]:checked').value;
-    const parts = selectedColor.split('|');
-    vipBg = parts[0]; // 背景色
-    vipFg = parts[1]; // 文字線條色
-  }
 
   if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
 
@@ -1666,31 +1461,32 @@ function saveReservation() {
       tableId: tId,
       startMin,
       endMin,
-      arrived: false,
-      // 新增 VIP 資料欄位
-      isVip: isVip,
-      vipBg: vipBg,
-      vipFg: vipFg
+      arrived: false
     });
   });
 
-  saveAll(); render(); closeModal();
+  saveAll(); render();
+  closeModal();
 }
 
 // ═══════════════════════════════════════════════════
 // 頁面加載控制
 // ═══════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('resize', () => {
+  if (sessionStorage.getItem('is_cafe_admin') === 'true') render();
+});
+
+// 頁面一載入的生命週期
+(() => {
+  // 檢查是否已經通過密碼驗證（免密鎖機制）
   if (sessionStorage.getItem('is_cafe_admin') === 'true') {
     document.getElementById('auth-overlay').style.display = 'none';
-    await startSystem(); // 登入過就直接載入資料並畫甘特圖
+    startSystem();
   } else {
-    document.getElementById('auth-overlay').style.display = 'flex'; // 沒登入過就強制顯示登入遮罩
-    if(document.getElementById('auth-password')) {
-      document.getElementById('auth-password').focus();
-    }
+    // 沒登入過，強制守在密碼輸入框，什麼都不加載
+    document.getElementById('auth-password').focus();
   }
-});
+})();
 </script>
 </body>
 </html>
