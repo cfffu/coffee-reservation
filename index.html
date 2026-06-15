@@ -1196,11 +1196,11 @@ function makeDraggable(block, r, items) {
         showTooltip(mockEvent, r);
         
         // 讓 Tooltip 固定在畫面上（不要隨滑鼠飄移）
-        const tooltip = document.getElementById('tooltip');
-        if (tooltip) {
-          tooltip.style.opacity = '1';
-          tooltip.style.visibility = 'visible';
-        }
+        //const tooltip = document.getElementById('tooltip');
+        //if (tooltip) {
+          //tooltip.style.opacity = '1';
+          //tooltip.style.visibility = 'visible';
+        //}
       }, 500); // 500ms 定義為長按
     } else {
       // 電腦版滑鼠不需要長按，直接視為已通過長按條件
