@@ -1182,18 +1182,6 @@ function makeDraggable(block, r, items) {
         
         // 畫面上加入被鎖定準備拖移的視覺效果 (可自由在 CSS 加樣式，例如放大或加陰影)
         groupBlocks.forEach(b => b.classList.add('ready-to-drag'));
-
-        // 觸發長按後，立刻顯示詳細訂位資訊 Tooltip
-        // 模擬一個位置傳給 Tooltip，讓它出現在手指上方
-        /*const mockEvent = { clientX: initialX, clientY: initialY - 30 };
-        showTooltip(mockEvent, r);
-        
-        //讓 Tooltip 固定在畫面上（不要隨滑鼠飄移）
-        const tooltip = document.getElementById('tooltip');
-        if (tooltip) {
-          tooltip.style.opacity = '1';
-          tooltip.style.visibility = 'visible';
-        }*/
       }, 500); // 500ms 定義為長按
     } else {
       // 電腦版滑鼠不需要長按，直接視為已通過長按條件
@@ -1265,7 +1253,7 @@ function makeDraggable(block, r, items) {
           // 手機版長按後原地放開：保持詳細資訊顯示在畫面上3秒
           const mockEvent = { clientX: up.clientX, clientY: up.clientY - 30 };
           showTooltip(mockEvent, r);
-          setTimeout(() => { hideTooltip(); }, 3000);
+          setTimeout(() => { hideTooltip(); }, 5000);
         }
         return;
       }
