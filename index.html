@@ -565,10 +565,10 @@
 
 <!-- Context Menu -->
 <div id="ctx-menu">
-  <button class="ctx-btn" id="ctx-edit-btn">✏️ 編輯訂位</button>
-  <button class="ctx-btn" id="ctx-arrived-btn">✔ 已抵達</button>
-  <button class="ctx-btn" id="ctx-checkout-btn">🚪 已離開</button>
-  <button class="ctx-btn danger" id="ctx-delete-btn">🗑 刪除訂位</button>
+  <button class="ctx-btn" id="ctx-edit-btn">編輯訂位</button>
+  <button class="ctx-btn" id="ctx-arrived-btn">已抵達</button>
+  <button class="ctx-btn" id="ctx-checkout-btn">已離開</button>
+  <button class="ctx-btn danger" id="ctx-delete-btn">刪除訂位</button>
   <div id="ctx-confirm-bar" style="display:none">
     <span style="font-size:.72rem;color:#c0392b;padding:4px 4px 4px 10px;letter-spacing:.04em">確定連同夥伴桌一起？</span>
     <button class="ctx-btn danger" id="ctx-confirm-yes" style="padding:6px 10px">刪除</button>
@@ -812,7 +812,7 @@ function checkoutReservation(id) {
   const nowMin = now.getHours() * 60 + now.getMinutes();
   
   if (nowMin <= target.startMin) {
-    alert("⚠️ 客人尚未到達或尚未到開始時間，無法執行離開釋出！\n如果是提早取消，請直接使用「刪除訂位」。");
+    alert("客人尚未到達或尚未到開始時間，無法執行離開釋出！\n如果是提早取消，請直接使用「刪除訂位」。");
     return;
   }
   if (nowMin >= target.endMin) {
