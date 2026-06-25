@@ -534,17 +534,10 @@
 </div>
 
 <div id="main-app" style="display: none;">
-
-  <div id="fb-banner" style="display:none;background:#fef3c7;border:1px solid #f59e0b; border-radius:10px;padding:11px 18px;margin-bottom:16px;font-size:.78rem; color:#78350f;letter-spacing:.04em;line-height:1.7">
-    ☁️ <strong>Firebase 未設定</strong>，目前使用 localStorage（僅此裝置可見）。<br>
-    如需跨裝置同步，請在程式碼頂端填入你的 Firebase 設定。
-    <button onclick="this.parentElement.style.display='none'" style="float:right;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;margin-left:10px">✕</button>
-  </div>
-
   <header>
     <div class="brand">
       <h1>☕ 拾柒cafe訂位管理系統</h1>
-      <p>Reservation Dashboard</p>
+      <p>17CAFE Dashboard</p>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
       <div class="date-nav">
@@ -755,18 +748,6 @@ async function startSystem() {
   
   if (!FB_ENABLED) document.getElementById('fb-banner').style.display = 'block';
   await loadAll();
-  
-  // 若完全無資料，塞入測試 Demo 預約單
-  if (Object.keys(reservationsByDate).length === 0) {
-    const td = todayStr();
-    reservationsByDate[td] = [
-      { id:'s1', groupId: null, name:'陳', suffix:'小姐', phone:'0912111222', pax:'2', note:'窗邊座位', tableId:'t1', startMin:11*60, endMin:13*60 },
-      { id:'s3_1', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb1', startMin:13*60, endMin:16*60 },
-      { id:'s3_2', groupId: 'g_demo123', name:'林團體', suffix:'先生', phone:'0977333444', pax:'12', note:'家族聚餐大單', tableId:'lb2', startMin:13*60, endMin:16*60 },
-      { id:'s4', groupId: null, name:'張', suffix:'小姐', phone:'0922444555', pax:'2', note:'不吃花生', tableId:'t5', startMin:10*60, endMin:12*60 },
-      { id:'s5', groupId: null, name:'李', suffix:'先生', phone:'0988555666', pax:'3', note:'提早告知', tableId:'ts', startMin:14*60+30, endMin:16*60+30 }
-    ];
-  }
   switchDate(todayStr());
 }
 
@@ -1494,19 +1475,17 @@ function saveReservation() {
   const phone = document.getElementById('f-phone').value.trim();
   const pax = document.getElementById('f-pax').value;
   const note = document.getElementById('f-note').value.trim();
-
-  if (!name) { alert('請填寫訂位人姓名/姓氏'); return; }
-
   const purePhone = phone.replace(/\D/g, '');
-  if (!purePhone) { alert('請填寫聯絡電話！'); return; }
-  if (purePhone.length !== 10) { alert(`⚠️ 電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`); return; }
-  if (!purePhone.startsWith('09')) { alert('⚠️ 電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。'); return; }
-
+  if (purePhone) {
+    if (purePhone.length !== 10) { alert(`⚠️ 電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`); return; }
+    if (!purePhone.startsWith('09')) { alert('⚠️ 電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。'); return; }
+  }
+  
   const startMin = getFormStartMin();
   const endMin   = getFormEndMin();
 
   if (endMin <= startMin) { alert('結束時間不能早於或等於開始時間！'); return; }
-  if (startMin < DAY_START || endMin > DAY_END) { alert(`本店營業時間為 10:30 ～ 18:00`); return; }
+  if (startMin < DAY_START || endMin > DAY_END) { alert(`本店營業時間為 10:00 ～ 18:00`); return; }
 
   const checkedTableIds = [];
   document.querySelectorAll('input[name="f-tables"]:checked').forEach(cb => {
