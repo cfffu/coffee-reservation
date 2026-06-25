@@ -1265,7 +1265,9 @@ function makeDraggable(block, r, items) {
 
       // 情境 C：真正進行了拖移，並在此處放下
       const finalDx = up.clientX - initialX;
-      const finalYPx = startTopPx + (up.clientY - initialY);
+      // 利用加上 Math.round 限制垂直移動，若 style.top 沒有值則預設為原本老桌子的基本高度
+      const currentTopPx = parseFloat(block.style.top) || (oldRowIdxForMaster * rowHeight);
+      const finalYPx = currentTopPx + (up.clientY - initialY);
 
       // 計算新時間軸位置 (X)
       const finalLeftPx = startLeftPx + finalDx;
@@ -1275,9 +1277,14 @@ function makeDraggable(block, r, items) {
       const clampedStart = Math.max(DAY_START, Math.min(DAY_END - duration, newStartMin));
       const clampedEnd = clampedStart + duration;
 
-      // 計算垂直移動了幾個 Row 的間距差 (Y Delta)
-      const currentRelativeTop = finalYPx - 33 - 6;
+      // 精密計算垂直移動了幾個 Row 的間距差 (Y Delta)
+      // 扣除頂部時間軸(33px)與容器邊距
+      const currentRelativeTop = finalYPx - 33;
       let newRowIdxForMaster = Math.round(currentRelativeTop / rowHeight);
+      
+      // 強制防呆：如果算出來的 Master 桌號爆表，直接將它鎖定在現有的桌號最大/最小值內，不讓它變成負數
+      newRowIdxForMaster = Math.max(0, Math.min(TABLES.length - 1, newRowIdxForMaster));
+      
       const oldRowIdxForMaster = TABLES.findIndex(t => t.id === r.tableId);
       let rowDelta = newRowIdxForMaster - oldRowIdxForMaster;
 
@@ -1293,10 +1300,14 @@ function makeDraggable(block, r, items) {
         const oldRowIdx = TABLES.findIndex(t => t.id === item.tableId);
         let newRowIdx = oldRowIdx + rowDelta;
         
-        if (newRowIdx < 0 || newRowIdx >= TABLES.length) {
-          hasConflict = true;
-          conflictMsg = "超出桌位系統範圍！";
-          break;
+        // 如果這一組連動的併桌桌位因為 rowDelta 移動而真的整組超出邊界
+        // 我們直接幫他「自動校正」，推回系統邊界內，而不是殘忍地彈出 Alert 打斷所有時間修改！
+        if (newRowIdx < 0) {
+          rowDelta = -oldRowIdx; // 強制校正，最頂就是到第 0 排
+          newRowIdx = 0;
+        } else if (newRowIdx >= TABLES.length) {
+          rowDelta = (TABLES.length - 1) - oldRowIdx; // 強制校正，最底就是最後一排
+          newRowIdx = TABLES.length - 1;
         }
 
         const newTableId = TABLES[newRowIdx].id;
