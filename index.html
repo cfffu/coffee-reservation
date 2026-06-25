@@ -737,7 +737,7 @@ function checkPassword() {
   }
 }
 
-// 🚀 正式初始化整個訂位儀表板
+// 正式初始化整個訂位儀表板
 async function startSystem() {
   document.getElementById('main-app').style.display = 'block';
   
@@ -1133,7 +1133,7 @@ function renderBlock(r) {
 }
 
 function updateCtxArrivedLabel(arrived) {
-  document.getElementById('ctx-arrived-btn').textContent = arrived ? '✔ 取消抵達狀態' : '✔ 切換為已抵達';
+  document.getElementById('ctx-arrived-btn').textContent = arrived ? '取消抵達狀態' : '切換為已抵達';
 }
 
 function makeDraggable(block, r, items) {
@@ -1295,7 +1295,7 @@ function makeDraggable(block, r, items) {
         
         if (newRowIdx < 0 || newRowIdx >= TABLES.length) {
           hasConflict = true;
-          conflictMsg = "⚠️ 超出桌位系統範圍！";
+          conflictMsg = "超出桌位系統範圍！";
           break;
         }
 
@@ -1303,7 +1303,7 @@ function makeDraggable(block, r, items) {
         const conflict = isConflict(newTableId, clampedStart, clampedEnd, excludeIds);
         if (conflict) {
           hasConflict = true;
-          conflictMsg = `⚠️ 無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有預約。`;
+          conflictMsg = `無法移動！\n${TABLES[newRowIdx].label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有預約。`;
           break;
         }
         updatedTableMappings.push({ id: item.id, newTableId });
@@ -1434,7 +1434,7 @@ function autoSetEndTime() {
 
 function openModal(id = null) {
   editingId = id;
-  document.getElementById('modal-title').textContent = id ? '✏️ 編輯現有訂位' : '☕ 新增咖啡廳訂位';
+  document.getElementById('modal-title').textContent = id ? '編輯現有訂位' : '新增咖啡廳訂位';
 
   document.querySelectorAll('input[name="f-tables"]').forEach(cb => cb.checked = false);
 
@@ -1493,8 +1493,8 @@ function saveReservation() {
   const note = document.getElementById('f-note').value.trim();
   const purePhone = phone.replace(/\D/g, '');
   if (purePhone) {
-    if (purePhone.length !== 10) { alert(`⚠️ 電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`); return; }
-    if (!purePhone.startsWith('09')) { alert('⚠️ 電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。'); return; }
+    if (purePhone.length !== 10) { alert(`電話號碼長度錯誤！\n手機號碼總共必須要有 10 碼數字（目前為 ${purePhone.length} 碼）。`); return; }
+    if (!purePhone.startsWith('09')) { alert('電話號碼格式錯誤！\n台灣手機號碼前兩碼必須是 09。'); return; }
   }
   
   const startMin = getFormStartMin();
@@ -1525,7 +1525,7 @@ function saveReservation() {
   for (let tId of checkedTableIds) {
     const conflict = isConflict(tId, startMin, endMin, excludeIds);
     if (conflict) {
-      alert(`⚠️ 時間發生衝突！\n${TABLES.find(t => t.id === tId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有「${conflict.name}${conflict.suffix}」的訂位。`);
+      alert(`時間發生衝突！\n${TABLES.find(t => t.id === tId).label} 在 ${minToTimeStr(conflict.startMin)}～${minToTimeStr(conflict.endMin)} 已經有「${conflict.name}${conflict.suffix}」的訂位。`);
       return;
     }
   }
