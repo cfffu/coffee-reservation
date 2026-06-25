@@ -1143,7 +1143,7 @@ function makeDraggable(block, r, items) {
     
     // 如果是點擊到了右鍵選單或其他控制項，不觸發拖移
     if (e.target.closest('.context-menu') || e.target.closest('.modal')) return;
-    window.blockTouchHover = false;
+    if (e.pointerType !== 'touch') window.blockTouchHover = false;
     e.stopPropagation();
 
     ctxTargetId = r.id;
