@@ -1028,9 +1028,25 @@ function renderMergedBlock(items) {
   }
 
   // 滑鼠懸停（Tooltip 提示與高亮）
-  block.addEventListener('mouseenter', e => showTooltip(e, r));
+  block.addEventListener('mouseenter', e => {
+    if (window.blockTouchHover) return;
+    
+    showTooltip(e, r);
+    if (r.groupId) {
+      document.querySelectorAll(`.res-block[data-group-id="${r.groupId}"]`).forEach(b => {
+        b.classList.add('group-highlight');
+      });
+    }
+  });
   block.addEventListener('mousemove',  e => moveTooltip(e));
-  block.addEventListener('mouseleave', () => hideTooltip());
+  block.addEventListener('mouseleave', () => {
+    hideTooltip();
+    if (r.groupId) {
+      document.querySelectorAll(`.res-block[data-group-id="${r.groupId}"]`).forEach(b => {
+        b.classList.remove('group-highlight');
+      });
+    }
+  });
 
   // 右鍵選單或點擊
   block.addEventListener('contextmenu', e => {      
